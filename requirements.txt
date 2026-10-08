@@ -1,0 +1,8 @@
+# Python dependency for the included ANTLR-generated X-language parser.
+# Version follows the manuscript's experiment environment (ANTLR 4.13.2).
+# Keep this version aligned with CDLexer.py and CDParser.py.
+antlr4-python3-runtime==4.13.2
+
+# All other imports in the supplied Python implementation are standard-library
+# or repository-local modules. Tests use the standard-library unittest module.
+# Install the nuXmv executable separately; it is not a Python pip dependency.
