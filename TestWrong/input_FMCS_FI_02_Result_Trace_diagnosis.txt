@@ -1,0 +1,357 @@
+==================================================
+        nuXmv 反例自动追溯与诊断报告
+==================================================
+
+[*] 反例折叠统计 (Counterexample Reduction Statistics):
+    反例数量: 1
+    原始状态块: 212
+    保留状态块: 44
+    折叠状态块: 168
+    状态块压缩率: 79.25%
+
+[*] 触发可达性检查 (Trigger Reachability Check):
+    说明: 仅检查触发前件是否可达；诊断属性不计入正式需求规约总数。
+    适用规约: 41
+    已获得检查结果: 41/41
+    已获得结果中触发条件可达: 41
+    已获得结果中触发条件不可达（潜在空满足）: 0
+    未获得检查结果: 0
+    [+] 所有触发型规约的触发条件均可达。
+
+--------------------------------------------------
+【反例 #1】
+失败的规范 (Failed Spec): G (RADAR.state = high_power_on -> RADAR.out_current = 3)
+
+[*] 来源需求追溯 (Source Requirement Trace):
+    需求编号 (Requirement ID): REQ-FMCS-CONS-03
+    需求模式/逻辑类型 (Pattern/Logic): 当前状态一致性 / LTL
+    生成规约 (Generated Spec): LTLSPEC G ((RADAR.state = high_power_on) -> (RADAR.out_current = 3));
+
+[*] 压缩反例轨迹 (Compressed Counterexample Trace):
+    -> State: 1.1 <-
+    FC.state = idle
+    FC.timer = 0
+    FC.out_evInstruct_value = 0
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = idle
+    CBM.timer = 0
+    CBM.out_evSensorPreparation_value = FALSE
+    CBM.out_evSensorPreparation_valid = FALSE
+    CBM.out_evActuatorEngage_value = FALSE
+    CBM.out_evActuatorEngage_valid = FALSE
+    CBM.out_evPayloadActivate_value = FALSE
+    CBM.out_evPayloadActivate_valid = FALSE
+    CBM.out_evFlightMode1_value = FALSE
+    CBM.out_evFlightMode1_valid = FALSE
+    CBM.out_evHighPowerOn_value = FALSE
+    CBM.out_evHighPowerOn_valid = FALSE
+    CBM.out_evFlightMode2_value = FALSE
+    CBM.out_evFlightMode2_valid = FALSE
+    CBM.out_evFlightMode3_value = FALSE
+    CBM.out_evFlightMode3_valid = FALSE
+    BAT.state = idle
+    BAT.timer = 0
+    BAT.out_voltage_value = 0
+    BAT.out_voltage_valid = FALSE
+    PL.state = off
+    PL.timer = 0
+    PL.out_current = 0
+    RADAR.state = off
+    RADAR.timer = 0
+    RADAR.out_current = 0
+    AP.state = off
+    AP.timer = 0
+    AP.out_current = 0
+    OP.state = idle
+    OP.timer = 0
+    OP.out_evstart_value = FALSE
+    OP.out_evstart_valid = FALSE
+    FC.out_evInstruct = 0
+    FC.in_evstart = FALSE
+    CBM.out_evFlightMode3 = FALSE
+    CBM.out_evFlightMode2 = FALSE
+    CBM.out_evHighPowerOn = FALSE
+    CBM.out_evFlightMode1 = FALSE
+    CBM.out_evPayloadActivate = FALSE
+    CBM.out_evActuatorEngage = FALSE
+    CBM.out_evSensorPreparation = FALSE
+    CBM.in_evInstruct = 0
+    BAT.out_voltage = 0
+    BAT.in_evstart = FALSE
+    PL.in_voltage = 0
+    PL.in_evPayloadActivate = FALSE
+    RADAR.in_voltage = 0
+    RADAR.in_evHighPowerOn = FALSE
+    RADAR.in_evSensorPreparation = FALSE
+    AP.in_voltage = 0
+    AP.in_evFlightMode3 = FALSE
+    AP.in_evFlightMode2 = FALSE
+    AP.in_evFlightMode1 = FALSE
+    AP.in_evActuatorEngage = FALSE
+    OP.out_evstart = FALSE
+    -> State: 1.2 <-
+    OP.state = off
+    OP.out_evstart_value = TRUE
+    OP.out_evstart_valid = TRUE
+    FC.in_evstart = TRUE
+    BAT.in_evstart = TRUE
+    OP.out_evstart = TRUE
+    -> State: 1.3 <-
+    FC.state = takeoff_climb0
+    BAT.state = power_on
+    OP.out_evstart_valid = FALSE
+    FC.in_evstart = FALSE
+    BAT.in_evstart = FALSE
+    OP.out_evstart = FALSE
+    -> State: 1.4 <-
+    FC.state = takeoff_climb
+    FC.out_evInstruct_value = 1
+    FC.out_evInstruct_valid = TRUE
+    BAT.state = discharge
+    BAT.out_voltage_value = 3
+    BAT.out_voltage_valid = TRUE
+    FC.out_evInstruct = 1
+    CBM.in_evInstruct = 1
+    BAT.out_voltage = 3
+    PL.in_voltage = 3
+    RADAR.in_voltage = 3
+    AP.in_voltage = 3
+    -> State: 1.5 <-
+    FC.timer = 1
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = tran
+    BAT.out_voltage_valid = FALSE
+    FC.out_evInstruct = 0
+    CBM.in_evInstruct = 0
+    -> State: 1.6 <-
+    FC.state = engine_pre_ignition
+    FC.timer = 0
+    FC.out_evInstruct_value = 2
+    FC.out_evInstruct_valid = TRUE
+    CBM.state = idle
+    CBM.out_evSensorPreparation_value = TRUE
+    CBM.out_evSensorPreparation_valid = TRUE
+    CBM.out_evActuatorEngage_value = TRUE
+    CBM.out_evActuatorEngage_valid = TRUE
+    FC.out_evInstruct = 2
+    CBM.out_evActuatorEngage = TRUE
+    CBM.out_evSensorPreparation = TRUE
+    CBM.in_evInstruct = 2
+    RADAR.in_evSensorPreparation = TRUE
+    AP.in_evActuatorEngage = TRUE
+    -> State: 1.7 <-
+    FC.timer = 1
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = tran
+    CBM.out_evSensorPreparation_valid = FALSE
+    CBM.out_evActuatorEngage_valid = FALSE
+    RADAR.state = pre_heat
+    RADAR.out_current = 1
+    AP.state = on
+    AP.out_current = 3
+    FC.out_evInstruct = 0
+    CBM.out_evActuatorEngage = FALSE
+    CBM.out_evSensorPreparation = FALSE
+    CBM.in_evInstruct = 0
+    RADAR.in_evSensorPreparation = FALSE
+    AP.in_evActuatorEngage = FALSE
+    -> State: 1.8 <-
+    FC.state = motor_ignition
+    FC.timer = 0
+    CBM.state = idle
+    CBM.out_evPayloadActivate_value = TRUE
+    CBM.out_evPayloadActivate_valid = TRUE
+    CBM.out_evPayloadActivate = TRUE
+    PL.in_evPayloadActivate = TRUE
+    -> State: 1.9 <-
+    FC.timer = 1
+    CBM.out_evPayloadActivate_valid = FALSE
+    PL.state = on
+    PL.out_current = 1
+    CBM.out_evPayloadActivate = FALSE
+    PL.in_evPayloadActivate = FALSE
+    -> State: 1.10 <-
+    FC.timer = 2
+    PL.timer = 1
+    -> State: 1.11 <-
+    FC.timer = 3
+    PL.state = over
+    PL.timer = 0
+    PL.out_current = 0
+    -> State: 1.12 <-
+    FC.timer = 4
+    ... [已折叠 16 步纯计时器等待或总线空转状态] ...
+    ... [隐藏的状态区间: 1.13 到 1.28] ...
+    -> State: 1.29 <-
+    FC.timer = 21
+    -> State: 1.30 <-
+    FC.state = cruise_turn
+    FC.timer = 0
+    -> State: 1.31 <-
+    FC.timer = 1
+    ... [已折叠 133 步纯计时器等待或总线空转状态] ...
+    ... [隐藏的状态区间: 1.32 到 1.164] ...
+    -> State: 1.165 <-
+    FC.timer = 135
+    -> State: 1.166 <-
+    FC.state = descent
+    FC.timer = 0
+    -> State: 1.167 <-
+    FC.timer = 1
+    ... [已折叠 18 步纯计时器等待或总线空转状态] ...
+    ... [隐藏的状态区间: 1.168 到 1.185] ...
+    -> State: 1.186 <-
+    FC.timer = 20
+    -> State: 1.187 <-
+    FC.timer = 21
+    -> State: 1.188 <-
+    FC.state = level_flight_2
+    FC.timer = 0
+    FC.out_evInstruct_value = 3
+    FC.out_evInstruct_valid = TRUE
+    FC.out_evInstruct = 3
+    CBM.in_evInstruct = 3
+    -> State: 1.189 <-
+    FC.timer = 1
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = tran
+    FC.out_evInstruct = 0
+    CBM.in_evInstruct = 0
+    -> State: 1.190 <-
+    FC.timer = 2
+    CBM.state = idle
+    CBM.out_evFlightMode1_value = TRUE
+    CBM.out_evFlightMode1_valid = TRUE
+    CBM.out_evHighPowerOn_value = TRUE
+    CBM.out_evHighPowerOn_valid = TRUE
+    CBM.out_evHighPowerOn = TRUE
+    CBM.out_evFlightMode1 = TRUE
+    RADAR.in_evHighPowerOn = TRUE
+    AP.in_evFlightMode1 = TRUE
+    -> State: 1.191 <-
+    FC.timer = 3
+    CBM.out_evFlightMode1_valid = FALSE
+    CBM.out_evHighPowerOn_valid = FALSE
+    RADAR.state = high_power_on
+    AP.state = transition1
+    AP.out_current = 18
+    CBM.out_evHighPowerOn = FALSE
+    CBM.out_evFlightMode1 = FALSE
+    RADAR.in_evHighPowerOn = FALSE
+    AP.in_evFlightMode1 = FALSE
+    -> State: 1.192 <-
+    FC.timer = 4
+    AP.state = on
+    -> State: 1.193 <-
+    FC.timer = 5
+    -> State: 1.194 <-
+    FC.timer = 6
+    -> State: 1.195 <-
+    FC.timer = 7
+    -> State: 1.196 <-
+    FC.state = secondary_descent
+    FC.timer = 0
+    FC.out_evInstruct_value = 4
+    FC.out_evInstruct_valid = TRUE
+    FC.out_evInstruct = 4
+    CBM.in_evInstruct = 4
+    -> State: 1.197 <-
+    FC.timer = 1
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = tran
+    FC.out_evInstruct = 0
+    CBM.in_evInstruct = 0
+    -> State: 1.198 <-
+    FC.state = level_flight_3
+    FC.timer = 0
+    FC.out_evInstruct_value = 5
+    FC.out_evInstruct_valid = TRUE
+    CBM.state = idle
+    CBM.out_evFlightMode2_value = TRUE
+    CBM.out_evFlightMode2_valid = TRUE
+    FC.out_evInstruct = 5
+    CBM.out_evFlightMode2 = TRUE
+    CBM.in_evInstruct = 5
+    AP.in_evFlightMode2 = TRUE
+    -> State: 1.199 <-
+    FC.timer = 1
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = tran
+    CBM.out_evFlightMode2_valid = FALSE
+    AP.state = transition1
+    AP.out_current = 3
+    FC.out_evInstruct = 0
+    CBM.out_evFlightMode2 = FALSE
+    CBM.in_evInstruct = 0
+    AP.in_evFlightMode2 = FALSE
+    -> State: 1.200 <-
+    FC.timer = 2
+    CBM.state = idle
+    CBM.out_evFlightMode1_valid = TRUE
+    AP.state = on
+    CBM.out_evFlightMode1 = TRUE
+    AP.in_evFlightMode1 = TRUE
+    -> State: 1.201 <-
+    FC.timer = 3
+    CBM.out_evFlightMode1_valid = FALSE
+    AP.state = transition1
+    AP.out_current = 18
+    CBM.out_evFlightMode1 = FALSE
+    AP.in_evFlightMode1 = FALSE
+    -> State: 1.202 <-
+    FC.timer = 4
+    AP.state = on
+    -> State: 1.203 <-
+    FC.timer = 5
+    ... [已折叠 1 步纯计时器等待或总线空转状态] ...
+    ... [隐藏的状态区间: 1.204 到 1.204] ...
+    -> State: 1.205 <-
+    FC.timer = 7
+    -> State: 1.206 <-
+    FC.timer = 8
+    -> State: 1.207 <-
+    FC.state = landing_approach
+    FC.timer = 0
+    FC.out_evInstruct_value = 6
+    FC.out_evInstruct_valid = TRUE
+    FC.out_evInstruct = 6
+    CBM.in_evInstruct = 6
+    -> State: 1.208 <-
+    FC.timer = 1
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = tran
+    FC.out_evInstruct = 0
+    CBM.in_evInstruct = 0
+    -> State: 1.209 <-
+    FC.state = finish
+    FC.timer = 0
+    CBM.state = idle
+    CBM.out_evFlightMode3_value = TRUE
+    CBM.out_evFlightMode3_valid = TRUE
+    CBM.out_evFlightMode3 = TRUE
+    AP.in_evFlightMode3 = TRUE
+    -> State: 1.210 <-
+    CBM.out_evFlightMode3_valid = FALSE
+    AP.state = transition1
+    AP.out_current = 2
+    CBM.out_evFlightMode3 = FALSE
+    AP.in_evFlightMode3 = FALSE
+    -- Loop starts here
+    -> State: 1.211 <-
+    AP.state = on
+    -> State: 1.212 <-
+
+[*] 失效规约涉及组件: 【Radar】(实例: RADAR)
+[*] 关键反例状态片段 (Reconstructed Witness Fragment):
+    -> State: 1.191 <- [违反不变量的状态]
+       RADAR.state = high_power_on
+       RADAR.out_current = 1
+[*] 违规分类 (Violation Classification):
+    来源模式分类: 一致性违规
+    公式结构: G(P -> Q)
+    公式结构分类: 一致性违规
+    分类依据: 来源需求模式与公式结构
+    一致性检查: 一致
+    -> [一致性违规]
+       触发条件成立时，目标状态或变量约束未能同时满足。
+

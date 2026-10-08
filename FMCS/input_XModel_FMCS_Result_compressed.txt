@@ -1,0 +1,118 @@
+*** This is nuXmv 2.1.0 (compiled on Thu Nov 28 16:15:03 2024)
+*** Copyright (c) 2014-2024, Fondazione Bruno Kessler
+*** For more information on nuXmv see https://nuxmv.fbk.eu
+*** or email to <nuxmv@fbk.eu>.
+*** Please report bugs at Please report bugs to <nusmv-users@fbk.eu>
+*** (click on "Login Anonymously" to access)
+*** Alternatively write to <nuxmv@fbk.eu>.
+
+*** This version of nuXmv is linked to NuSMV 2.7.0.
+*** For more information on NuSMV see <http://nusmv.fbk.eu>
+*** or email to <nusmv-users@fbk.eu>.
+*** Copyright (C) 2010-2024, Fondazione Bruno Kessler
+
+*** This version of nuXmv is linked to the CUDD library version 2.4.1
+*** Copyright (c) 1995-2004, Regents of the University of Colorado
+
+*** This version of nuXmv is linked to the MiniSat SAT solver. 
+*** See http://minisat.se/MiniSat.html
+*** Copyright (c) 2003-2006, Niklas Een, Niklas Sorensson
+*** Copyright (c) 2007-2010, Niklas Sorensson
+
+*** This version of nuXmv is linked to MathSAT
+*** Copyright (C) 2009-2019 by Fondazione Bruno Kessler
+*** Copyright (C) 2009-2019 by University of Trento and others
+*** See http://mathsat.fbk.eu
+
+-- specification EF BAT.state = discharge  is true
+-- specification EF FC.state = engine_pre_ignition  is true
+-- specification EF FC.state = motor_ignition  is true
+-- specification EF FC.state = cruise_turn  is true
+-- specification EF FC.state = descent  is true
+-- specification EF FC.state = descent  is true
+-- specification EF FC.state = level_flight_2  is true
+-- specification EF FC.state = level_flight_2  is true
+-- specification EF FC.state = secondary_descent  is true
+-- specification EF FC.state = secondary_descent  is true
+-- specification EF FC.state = level_flight_3  is true
+-- specification EF FC.state = level_flight_3  is true
+-- specification EF FC.state = landing_approach  is true
+-- specification EF FC.state = idle  is true
+-- specification EF BAT.state = idle  is true
+-- specification EF (FC.state = idle & FC.in_evstart = TRUE)  is true
+-- specification EF CBM.in_evInstruct = 1  is true
+-- specification EF CBM.in_evInstruct = 1  is true
+-- specification EF CBM.in_evInstruct = 2  is true
+-- specification EF CBM.in_evInstruct = 3  is true
+-- specification EF CBM.in_evInstruct = 3  is true
+-- specification EF CBM.in_evInstruct = 4  is true
+-- specification EF CBM.in_evInstruct = 6  is true
+-- specification EF RADAR.in_evHighPowerOn = TRUE  is true
+-- specification EF AP.in_evFlightMode1 = TRUE  is true
+-- specification EF AP.in_evFlightMode2 = TRUE  is true
+-- specification EF AP.in_evFlightMode3 = TRUE  is true
+-- specification EF RADAR.state = pre_heat  is true
+-- specification EF RADAR.state = high_power_on  is true
+-- specification EF PL.state = on  is true
+-- specification EF PL.state = over  is true
+-- specification EF PL.state = on  is true
+-- specification EF RADAR.state = off  is true
+-- specification EF RADAR.state = pre_heat  is true
+-- specification EF PL.state = off  is true
+-- specification EF PL.state = on  is true
+-- specification EF (PL.state = off & PL.in_evPayloadActivate = TRUE)  is true
+-- specification EF AP.state = transition1  is true
+-- specification EF AP.state = off  is true
+-- specification AG ((AP.state = off & AP.in_evActuatorEngage = TRUE) -> AX AP.state = on)  is true
+-- specification EF (AP.state = off & AP.in_evActuatorEngage = TRUE)  is true
+-- specification EF (AP.state = on & AP.in_evFlightMode1 = TRUE)  is true
+-- specification AG ((AP.state = on & AP.in_evFlightMode1 = TRUE) -> AX AP.out_current = 18)  is true
+-- specification  G (FC.state = engine_pre_ignition ->  F FC.state = motor_ignition)  is true
+-- specification  G (FC.state = motor_ignition ->  F FC.state = cruise_turn)  is true
+-- specification  G (FC.state = cruise_turn ->  F FC.state = descent)  is true
+-- specification  G (FC.state = descent ->  F FC.state = level_flight_2)  is true
+-- specification  G (FC.state = level_flight_2 ->  F FC.state = secondary_descent)  is true
+-- specification  G (FC.state = secondary_descent ->  F FC.state = level_flight_3)  is true
+-- specification  G (FC.state = level_flight_3 ->  F FC.state = landing_approach)  is true
+-- specification  G (FC.state = landing_approach ->  F FC.state = finish)  is true
+-- specification  G !(FC.state = idle & FC.state = finish)  is true
+-- specification  G !(BAT.state = idle & BAT.state = discharge)  is true
+-- specification  F FC.state = finish  is true
+-- specification  F BAT.state = discharge  is true
+-- specification  G (BAT.state = discharge -> BAT.out_voltage = 3)  is true
+-- specification  G ((FC.state = idle & FC.in_evstart = TRUE) ->  F FC.state = takeoff_climb0)  is true
+-- specification  G (FC.state = idle -> (FC.state = idle U FC.in_evstart = TRUE))  is true
+-- specification  G (BAT.state = idle -> (BAT.state = idle U BAT.in_evstart = TRUE))  is true
+-- specification  G (FC.state = descent ->  F FC.out_evInstruct = 3)  is true
+-- specification  G (FC.state = level_flight_2 ->  F FC.out_evInstruct = 4)  is true
+-- specification  G (FC.state = secondary_descent ->  F FC.out_evInstruct = 5)  is true
+-- specification  G (FC.state = level_flight_3 ->  F FC.out_evInstruct = 6)  is true
+-- specification  G (CBM.in_evInstruct = 1 ->  F CBM.out_evSensorPreparation = TRUE)  is true
+-- specification  G (CBM.in_evInstruct = 1 ->  F CBM.out_evActuatorEngage = TRUE)  is true
+-- specification  G (CBM.in_evInstruct = 2 ->  F CBM.out_evPayloadActivate = TRUE)  is true
+-- specification  G (CBM.in_evInstruct = 3 ->  F CBM.out_evHighPowerOn = TRUE)  is true
+-- specification  G (CBM.in_evInstruct = 3 ->  F CBM.out_evFlightMode1 = TRUE)  is true
+-- specification  G (CBM.in_evInstruct = 4 ->  F CBM.out_evFlightMode2 = TRUE)  is true
+-- specification  G (CBM.in_evInstruct = 6 ->  F CBM.out_evFlightMode3 = TRUE)  is true
+-- specification  G (PL.state = on ->  F PL.state = over)  is true
+-- specification  G (PL.state = on -> (PL.state = on U PL.state = over))  is true
+-- specification  G !(RADAR.state = off & RADAR.state = high_power_on)  is true
+-- specification  G !(PL.state = on & PL.state = over)  is true
+-- specification  F RADAR.state = high_power_on  is true
+-- specification  F PL.state = over  is true
+-- specification  G (RADAR.state = pre_heat -> RADAR.out_current = 1)  is true
+-- specification  G (RADAR.state = high_power_on -> RADAR.out_current = 3)  is true
+-- specification  G (PL.state = on -> PL.out_current = 1)  is true
+-- specification  G (PL.state = over -> PL.out_current = 0)  is true
+-- specification  G ((PL.state = off & PL.in_evPayloadActivate = TRUE) ->  F PL.state = on)  is true
+-- specification  G (RADAR.in_evHighPowerOn = TRUE ->  F RADAR.state = high_power_on)  is true
+-- specification  G (RADAR.state = off -> (RADAR.state = off U RADAR.in_evSensorPreparation = TRUE))  is true
+-- specification  G (RADAR.state = pre_heat -> (RADAR.state = pre_heat U RADAR.in_evHighPowerOn = TRUE))  is true
+-- specification  G (PL.state = off -> (PL.state = off U PL.in_evPayloadActivate = TRUE))  is true
+-- specification  G (AP.state = transition1 ->  F AP.state = on)  is true
+-- specification  F AP.state = on  is true
+-- specification  G (AP.in_evFlightMode1 = TRUE ->  F AP.state = transition1)  is true
+-- specification  G (AP.in_evFlightMode2 = TRUE ->  F AP.state = transition1)  is true
+-- specification  G (AP.in_evFlightMode3 = TRUE ->  F AP.state = transition1)  is true
+-- specification  G (AP.state = off -> (AP.state = off U AP.in_evActuatorEngage = TRUE))  is true
+-- specification  G !(AP.state = off & AP.out_current = 18)  is true

@@ -1,0 +1,65 @@
+-- ==================================================================
+-- 由结构化CNL需求自动生成的nuXmv规约
+-- 需求文件：input_Requirements_TransformationConsistency.md
+-- 追溯文件：input_Traceability_TransformationConsistency.txt
+-- 规约总数：10（CTL=10, LTL=0）
+-- 诊断警告：0
+-- ==================================================================
+
+-- [REQ-STEP-01] 固定步响应 / CTL
+-- 原始需求：当【固定步测试组件】处于【初始状态】后，【固定步测试组件】一定在【1】步后【进入中间状态】
+SPEC AG ((STEP.state = s0) -> AX (STEP.state = s1));
+
+-- [REQ-STEP-02] 固定步响应 / CTL
+-- 原始需求：当【固定步测试组件】处于【初始状态】后，【固定步测试组件】一定在【2】步后【进入完成状态】
+SPEC AG ((STEP.state = s0) -> AX (AX (STEP.state = s2)));
+
+-- [REQ-STEP-03] 固定步响应 / CTL
+-- 原始需求：当【固定步测试组件】处于【初始状态】后，【固定步测试组件】一定在【1】步后【进入完成状态】
+SPEC AG ((STEP.state = s0) -> AX (STEP.state = s2));
+
+-- [REQ-TIMER-01] 固定步响应 / CTL
+-- 原始需求：当【计时测试组件】处于【初始状态】后，【计时测试组件】一定在【2】步后【进入完成状态】
+SPEC AG ((TIMER.state = t0) -> AX (AX (TIMER.state = t1)));
+
+-- [REQ-TIMER-02] 固定步响应 / CTL
+-- 原始需求：当【计时测试组件】处于【初始状态】后，【计时测试组件】一定在【1】步后【进入完成状态】
+SPEC AG ((TIMER.state = t0) -> AX (TIMER.state = t1));
+
+-- [REQ-COND-01] 固定步响应 / CTL
+-- 原始需求：当【条件栈测试组件】处于【等待判定状态】且【条件栈测试组件】收到【选择值二】后，【条件栈测试组件】一定在【1】步后【输出优先分支结果】
+SPEC AG (((COND.state = waiting) & (COND.in_selector = 2)) -> AX (COND.out_result = 20));
+
+-- [REQ-COND-02] 固定步响应 / CTL
+-- 原始需求：当【条件栈测试组件】处于【等待判定状态】且【条件栈测试组件】收到【选择值二】后，【条件栈测试组件】一定在【1】步后【输出次优先分支结果】
+SPEC AG (((COND.state = waiting) & (COND.in_selector = 2)) -> AX (COND.out_result = 30));
+
+-- [REQ-COMM-00] 固定步响应 / CTL
+-- 原始需求：当【信号发送组件】处于【发送状态】后，【信号接收组件】一定在【0】步后【收到测试信号】
+SPEC AG ((SENDER.state = emit) -> (RECEIVER.in_signal = TRUE));
+
+-- [REQ-COMM-01] 固定步响应 / CTL
+-- 原始需求：当【信号发送组件】处于【发送状态】后，【信号接收组件】一定在【1】步后【收到测试信号】
+SPEC AG ((SENDER.state = emit) -> AX (RECEIVER.in_signal = TRUE));
+
+-- [REQ-COMM-02] 固定步响应 / CTL
+-- 原始需求：当【信号发送组件】处于【发送状态】后，【信号接收组件】一定在【2】步后【进入接收完成状态】
+SPEC AG ((SENDER.state = emit) -> AX (AX (RECEIVER.state = received)));
+
+-- ==================================================================
+-- BEGIN: 可直接复制到nuXmv模型的完整CTL/LTL规约
+-- 注意：前文已包含同一组规约；本区仅用于集中复制。
+-- ==================================================================
+SPEC AG ((STEP.state = s0) -> AX (STEP.state = s1));
+SPEC AG ((STEP.state = s0) -> AX (AX (STEP.state = s2)));
+SPEC AG ((STEP.state = s0) -> AX (STEP.state = s2));
+SPEC AG ((TIMER.state = t0) -> AX (AX (TIMER.state = t1)));
+SPEC AG ((TIMER.state = t0) -> AX (TIMER.state = t1));
+SPEC AG (((COND.state = waiting) & (COND.in_selector = 2)) -> AX (COND.out_result = 20));
+SPEC AG (((COND.state = waiting) & (COND.in_selector = 2)) -> AX (COND.out_result = 30));
+SPEC AG ((SENDER.state = emit) -> (RECEIVER.in_signal = TRUE));
+SPEC AG ((SENDER.state = emit) -> AX (RECEIVER.in_signal = TRUE));
+SPEC AG ((SENDER.state = emit) -> AX (AX (RECEIVER.state = received)));
+-- ==================================================================
+-- END: 可直接复制到nuXmv模型的完整CTL/LTL规约
+-- ==================================================================

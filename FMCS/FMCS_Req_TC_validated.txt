@@ -1,0 +1,103 @@
+source(操作端, oper) {
+  state_source(待机状态, idle)
+  state_source(关闭状态, off)
+  event_source(发出系统启动命令, evstart = TRUE)
+}
+
+source(飞行任务控制系统, FlightMissionControl) {
+  state_source(待机状态, idle)
+  state_source(起飞爬升准备阶段, takeoff_climb0)
+  state_source(起飞爬升阶段, takeoff_climb)
+  state_source(发动机预点火阶段, engine_pre_ignition)
+  state_source(电机点火阶段, motor_ignition)
+  state_source(巡航转弯阶段, cruise_turn)
+  state_source(下降阶段, descent)
+  state_source(第二平飞阶段, level_flight_2)
+  state_source(二次下降阶段, secondary_descent)
+  state_source(第三平飞阶段, level_flight_3)
+  state_source(着陆进近阶段, landing_approach)
+  state_source(任务完成状态, finish)
+  condition_source(收到系统启动命令, evstart = TRUE)
+  event_source(发出起飞准备指令, evInstruct = 1)
+  event_source(发出载荷启动指令, evInstruct = 2)
+  event_source(发出雷达高功率和第一飞行模式指令, evInstruct = 3)
+  event_source(发出第二飞行模式指令, evInstruct = 4)
+  event_source(发出单发第一飞行模式指令, evInstruct = 5)
+  event_source(发出第三飞行模式指令, evInstruct = 6)
+}
+
+source(控制总线, ControlBusModule) {
+  state_source(待机状态, idle)
+  state_source(指令转发状态, tran)
+  condition_source(收到起飞准备指令, evInstruct = 1)
+  condition_source(收到载荷启动指令, evInstruct = 2)
+  condition_source(收到雷达高功率和第一飞行模式指令, evInstruct = 3)
+  condition_source(收到第二飞行模式指令, evInstruct = 4)
+  condition_source(收到第一飞行模式指令, evInstruct = 5)
+  condition_source(收到第三飞行模式指令, evInstruct = 6)
+  event_source(发送传感器准备信号, evSensorPreparation = TRUE)
+  event_source(发送执行机构接入信号, evActuatorEngage = TRUE)
+  event_source(发送载荷激活信号, evPayloadActivate = TRUE)
+  event_source(发送第一飞行模式信号, evFlightMode1 = TRUE)
+  event_source(发送雷达高功率开启信号, evHighPowerOn = TRUE)
+  event_source(发送第二飞行模式信号, evFlightMode2 = TRUE)
+  event_source(发送第三飞行模式信号, evFlightMode3 = TRUE)
+}
+
+source(供电系统, Battery) {
+  state_source(未启动状态, idle)
+  state_source(上电状态, power_on)
+  state_source(稳定供电状态, discharge)
+  condition_source(收到系统启动命令, evstart = TRUE)
+  value_source(任务所需的工作电压, voltage = 3)
+  value_source(稳定供电电压, voltage = 3)
+}
+
+source(雷达, Radar) {
+  state_source(关闭状态, off)
+  state_source(预热阶段, pre_heat)
+  state_source(高功率工作阶段, high_power_on)
+  condition_source(收到传感器准备信号, evSensorPreparation = TRUE)
+  condition_source(收到高功率开启信号, evHighPowerOn = TRUE)
+  value_source(低功率电流, current = 1)
+  value_source(高功率电流, current = 3)
+  value_source(从关闭状态直接进入高功率工作阶段, state = high_power_on)
+}
+
+source(自动驾驶仪, AutoPilot) {
+  state_source(关闭状态, off)
+  state_source(可工作状态, on)
+  state_source(模式切换过渡阶段, transition1)
+  condition_source(收到执行机构接入信号, evActuatorEngage = TRUE)
+  condition_source(收到第一飞行模式信号, evFlightMode1 = TRUE)
+  condition_source(收到第二飞行模式信号, evFlightMode2 = TRUE)
+  condition_source(收到第三飞行模式信号, evFlightMode3 = TRUE)
+  value_source(接入后的基础工作电流, current = 3)
+  value_source(高负载工作状态, current = 18)
+  value_source(中等负载工作状态, current = 3)
+  value_source(低负载工作状态, current = 2)
+  value_source(从可工作状态回到关闭状态, state = off)
+}
+
+source(载荷, Payload) {
+  state_source(关闭状态, off)
+  state_source(工作阶段, on)
+  state_source(结束状态, over)
+  condition_source(收到载荷激活信号, evPayloadActivate = TRUE)
+  value_source(工作电流输出, current = 1)
+  value_source(零, current = 0)
+  value_source(从结束状态回到工作阶段, state = on)
+}
+
+source(任务时序, FlightMissionControl.timer) {
+  time_source(立即, statehold(0))
+  time_source(指定时间_起飞爬升, statehold(1))
+  time_source(指定时间_发动机预点火, statehold(1))
+  time_source(指定时间_电机点火, statehold(21))
+  time_source(指定时间_巡航转弯, statehold(135))
+  time_source(指定时间_下降, statehold(21))
+  time_source(指定时间_第二平飞, statehold(7))
+  time_source(指定时间_二次下降, statehold(1))
+  time_source(指定时间_第三平飞, statehold(8))
+  time_source(指定时间_着陆进近, statehold(1))
+}

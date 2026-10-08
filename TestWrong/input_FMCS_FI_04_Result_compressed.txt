@@ -1,0 +1,760 @@
+*** This is nuXmv 2.1.0 (compiled on Thu Nov 28 16:15:03 2024)
+*** Copyright (c) 2014-2024, Fondazione Bruno Kessler
+*** For more information on nuXmv see https://nuxmv.fbk.eu
+*** or email to <nuxmv@fbk.eu>.
+*** Please report bugs at Please report bugs to <nusmv-users@fbk.eu>
+*** (click on "Login Anonymously" to access)
+*** Alternatively write to <nuxmv@fbk.eu>.
+
+*** This version of nuXmv is linked to NuSMV 2.7.0.
+*** For more information on NuSMV see <http://nusmv.fbk.eu>
+*** or email to <nusmv-users@fbk.eu>.
+*** Copyright (C) 2010-2024, Fondazione Bruno Kessler
+
+*** This version of nuXmv is linked to the CUDD library version 2.4.1
+*** Copyright (c) 1995-2004, Regents of the University of Colorado
+
+*** This version of nuXmv is linked to the MiniSat SAT solver. 
+*** See http://minisat.se/MiniSat.html
+*** Copyright (c) 2003-2006, Niklas Een, Niklas Sorensson
+*** Copyright (c) 2007-2010, Niklas Sorensson
+
+*** This version of nuXmv is linked to MathSAT
+*** Copyright (C) 2009-2019 by Fondazione Bruno Kessler
+*** Copyright (C) 2009-2019 by University of Trento and others
+*** See http://mathsat.fbk.eu
+
+-- specification EF BAT.state = discharge  is true
+-- specification EF FC.state = engine_pre_ignition  is true
+-- specification EF FC.state = motor_ignition  is true
+-- specification EF FC.state = cruise_turn  is true
+-- specification EF FC.state = descent  is true
+-- specification EF FC.state = descent  is true
+-- specification EF FC.state = level_flight_2  is true
+-- specification EF FC.state = level_flight_2  is true
+-- specification EF FC.state = secondary_descent  is true
+-- specification EF FC.state = secondary_descent  is true
+-- specification EF FC.state = level_flight_3  is true
+-- specification EF FC.state = level_flight_3  is true
+-- specification EF FC.state = landing_approach  is true
+-- specification EF FC.state = idle  is true
+-- specification EF BAT.state = idle  is true
+-- specification EF (FC.state = idle & FC.in_evstart = TRUE)  is true
+-- specification EF CBM.in_evInstruct = 1  is true
+-- specification EF CBM.in_evInstruct = 1  is true
+-- specification EF CBM.in_evInstruct = 2  is true
+-- specification EF CBM.in_evInstruct = 3  is true
+-- specification EF CBM.in_evInstruct = 3  is true
+-- specification EF CBM.in_evInstruct = 4  is true
+-- specification EF CBM.in_evInstruct = 6  is true
+-- specification EF RADAR.in_evHighPowerOn = TRUE  is true
+-- specification EF AP.in_evFlightMode1 = TRUE  is true
+-- specification EF AP.in_evFlightMode2 = TRUE  is true
+-- specification EF AP.in_evFlightMode3 = TRUE  is true
+-- specification EF RADAR.state = pre_heat  is true
+-- specification EF RADAR.state = high_power_on  is true
+-- specification EF PL.state = on  is true
+-- specification EF PL.state = over  is true
+-- specification EF PL.state = on  is true
+-- specification EF RADAR.state = off  is true
+-- specification EF RADAR.state = pre_heat  is true
+-- specification EF PL.state = off  is true
+-- specification EF PL.state = on  is true
+-- specification EF (PL.state = off & PL.in_evPayloadActivate = TRUE)  is true
+-- specification EF AP.state = transition1  is true
+-- specification EF AP.state = off  is true
+-- specification AG ((AP.state = off & AP.in_evActuatorEngage = TRUE) -> AX AP.state = on)  is true
+-- specification EF (AP.state = off & AP.in_evActuatorEngage = TRUE)  is true
+-- specification EF (AP.state = on & AP.in_evFlightMode1 = TRUE)  is true
+-- specification AG ((AP.state = on & AP.in_evFlightMode1 = TRUE) -> AX AP.out_current = 18)  is true
+-- specification  G (FC.state = engine_pre_ignition ->  F FC.state = motor_ignition)  is true
+-- specification  G (FC.state = motor_ignition ->  F FC.state = cruise_turn)  is true
+-- specification  G (FC.state = cruise_turn ->  F FC.state = descent)  is true
+-- specification  G (FC.state = descent ->  F FC.state = level_flight_2)  is true
+-- specification  G (FC.state = level_flight_2 ->  F FC.state = secondary_descent)  is true
+-- specification  G (FC.state = secondary_descent ->  F FC.state = level_flight_3)  is true
+-- specification  G (FC.state = level_flight_3 ->  F FC.state = landing_approach)  is true
+-- specification  G (FC.state = landing_approach ->  F FC.state = finish)  is false
+-- as demonstrated by the following execution sequence
+Trace Description: LTL Counterexample 
+Trace Type: Counterexample 
+  -> State: 1.1 <-
+    FC.state = idle
+    FC.timer = 0
+    FC.out_evInstruct_value = 0
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = idle
+    CBM.timer = 0
+    CBM.out_evSensorPreparation_value = FALSE
+    CBM.out_evSensorPreparation_valid = FALSE
+    CBM.out_evActuatorEngage_value = FALSE
+    CBM.out_evActuatorEngage_valid = FALSE
+    CBM.out_evPayloadActivate_value = FALSE
+    CBM.out_evPayloadActivate_valid = FALSE
+    CBM.out_evFlightMode1_value = FALSE
+    CBM.out_evFlightMode1_valid = FALSE
+    CBM.out_evHighPowerOn_value = FALSE
+    CBM.out_evHighPowerOn_valid = FALSE
+    CBM.out_evFlightMode2_value = FALSE
+    CBM.out_evFlightMode2_valid = FALSE
+    CBM.out_evFlightMode3_value = FALSE
+    CBM.out_evFlightMode3_valid = FALSE
+    BAT.state = idle
+    BAT.timer = 0
+    BAT.out_voltage_value = 0
+    BAT.out_voltage_valid = FALSE
+    PL.state = off
+    PL.timer = 0
+    PL.out_current = 0
+    RADAR.state = off
+    RADAR.timer = 0
+    RADAR.out_current = 0
+    AP.state = off
+    AP.timer = 0
+    AP.out_current = 0
+    OP.state = idle
+    OP.timer = 0
+    OP.out_evstart_value = FALSE
+    OP.out_evstart_valid = FALSE
+    FC.out_evInstruct = 0
+    FC.in_evstart = FALSE
+    CBM.out_evFlightMode3 = FALSE
+    CBM.out_evFlightMode2 = FALSE
+    CBM.out_evHighPowerOn = FALSE
+    CBM.out_evFlightMode1 = FALSE
+    CBM.out_evPayloadActivate = FALSE
+    CBM.out_evActuatorEngage = FALSE
+    CBM.out_evSensorPreparation = FALSE
+    CBM.in_evInstruct = 0
+    BAT.out_voltage = 0
+    BAT.in_evstart = FALSE
+    PL.in_voltage = 0
+    PL.in_evPayloadActivate = FALSE
+    RADAR.in_voltage = 0
+    RADAR.in_evHighPowerOn = FALSE
+    RADAR.in_evSensorPreparation = FALSE
+    AP.in_voltage = 0
+    AP.in_evFlightMode3 = FALSE
+    AP.in_evFlightMode2 = FALSE
+    AP.in_evFlightMode1 = FALSE
+    AP.in_evActuatorEngage = FALSE
+    OP.out_evstart = FALSE
+  -> State: 1.2 <-
+    OP.state = off
+    OP.out_evstart_value = TRUE
+    OP.out_evstart_valid = TRUE
+    FC.in_evstart = TRUE
+    BAT.in_evstart = TRUE
+    OP.out_evstart = TRUE
+  -> State: 1.3 <-
+    FC.state = takeoff_climb0
+    BAT.state = power_on
+    OP.out_evstart_valid = FALSE
+    FC.in_evstart = FALSE
+    BAT.in_evstart = FALSE
+    OP.out_evstart = FALSE
+  -> State: 1.4 <-
+    FC.state = takeoff_climb
+    FC.out_evInstruct_value = 1
+    FC.out_evInstruct_valid = TRUE
+    BAT.state = discharge
+    BAT.out_voltage_value = 3
+    BAT.out_voltage_valid = TRUE
+    FC.out_evInstruct = 1
+    CBM.in_evInstruct = 1
+    BAT.out_voltage = 3
+    PL.in_voltage = 3
+    RADAR.in_voltage = 3
+    AP.in_voltage = 3
+  -> State: 1.5 <-
+    FC.timer = 1
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = tran
+    BAT.out_voltage_valid = FALSE
+    FC.out_evInstruct = 0
+    CBM.in_evInstruct = 0
+  -> State: 1.6 <-
+    FC.state = engine_pre_ignition
+    FC.timer = 0
+    FC.out_evInstruct_value = 2
+    FC.out_evInstruct_valid = TRUE
+    CBM.state = idle
+    CBM.out_evSensorPreparation_value = TRUE
+    CBM.out_evSensorPreparation_valid = TRUE
+    CBM.out_evActuatorEngage_value = TRUE
+    CBM.out_evActuatorEngage_valid = TRUE
+    FC.out_evInstruct = 2
+    CBM.out_evActuatorEngage = TRUE
+    CBM.out_evSensorPreparation = TRUE
+    CBM.in_evInstruct = 2
+    RADAR.in_evSensorPreparation = TRUE
+    AP.in_evActuatorEngage = TRUE
+  -> State: 1.7 <-
+    FC.timer = 1
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = tran
+    CBM.out_evSensorPreparation_valid = FALSE
+    CBM.out_evActuatorEngage_valid = FALSE
+    RADAR.state = pre_heat
+    RADAR.out_current = 1
+    AP.state = on
+    AP.out_current = 3
+    FC.out_evInstruct = 0
+    CBM.out_evActuatorEngage = FALSE
+    CBM.out_evSensorPreparation = FALSE
+    CBM.in_evInstruct = 0
+    RADAR.in_evSensorPreparation = FALSE
+    AP.in_evActuatorEngage = FALSE
+  -> State: 1.8 <-
+    FC.state = motor_ignition
+    FC.timer = 0
+    CBM.state = idle
+    CBM.out_evPayloadActivate_value = TRUE
+    CBM.out_evPayloadActivate_valid = TRUE
+    CBM.out_evPayloadActivate = TRUE
+    PL.in_evPayloadActivate = TRUE
+  -> State: 1.9 <-
+    FC.timer = 1
+    CBM.out_evPayloadActivate_valid = FALSE
+    PL.state = on
+    PL.out_current = 1
+    CBM.out_evPayloadActivate = FALSE
+    PL.in_evPayloadActivate = FALSE
+  -> State: 1.10 <-
+    FC.timer = 2
+    PL.timer = 1
+  -> State: 1.11 <-
+    FC.timer = 3
+    PL.state = over
+    PL.timer = 0
+    PL.out_current = 0
+  -> State: 1.12 <-
+    FC.timer = 4
+    ... [已折叠 15 步纯计时器等待或总线空转状态] ...
+    ... [隐藏的状态区间: 1.13 到 1.27] ...
+  -> State: 1.28 <-
+    FC.timer = 20
+  -> State: 1.29 <-
+    FC.timer = 21
+  -> State: 1.30 <-
+    FC.state = cruise_turn
+    FC.timer = 0
+  -> State: 1.31 <-
+    FC.timer = 1
+  -> State: 1.32 <-
+    FC.timer = 2
+    ... [已折叠 131 步纯计时器等待或总线空转状态] ...
+    ... [隐藏的状态区间: 1.33 到 1.163] ...
+  -> State: 1.164 <-
+    FC.timer = 134
+  -> State: 1.165 <-
+    FC.timer = 135
+  -> State: 1.166 <-
+    FC.state = descent
+    FC.timer = 0
+  -> State: 1.167 <-
+    FC.timer = 1
+  -> State: 1.168 <-
+    FC.timer = 2
+    ... [已折叠 17 步纯计时器等待或总线空转状态] ...
+    ... [隐藏的状态区间: 1.169 到 1.185] ...
+  -> State: 1.186 <-
+    FC.timer = 20
+  -> State: 1.187 <-
+    FC.timer = 21
+  -> State: 1.188 <-
+    FC.state = level_flight_2
+    FC.timer = 0
+    FC.out_evInstruct_value = 3
+    FC.out_evInstruct_valid = TRUE
+    FC.out_evInstruct = 3
+    CBM.in_evInstruct = 3
+  -> State: 1.189 <-
+    FC.timer = 1
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = tran
+    FC.out_evInstruct = 0
+    CBM.in_evInstruct = 0
+  -> State: 1.190 <-
+    FC.timer = 2
+    CBM.state = idle
+    CBM.out_evFlightMode1_value = TRUE
+    CBM.out_evFlightMode1_valid = TRUE
+    CBM.out_evHighPowerOn_value = TRUE
+    CBM.out_evHighPowerOn_valid = TRUE
+    CBM.out_evHighPowerOn = TRUE
+    CBM.out_evFlightMode1 = TRUE
+    RADAR.in_evHighPowerOn = TRUE
+    AP.in_evFlightMode1 = TRUE
+  -> State: 1.191 <-
+    FC.timer = 3
+    CBM.out_evFlightMode1_valid = FALSE
+    CBM.out_evHighPowerOn_valid = FALSE
+    RADAR.state = high_power_on
+    RADAR.out_current = 3
+    AP.state = transition1
+    AP.out_current = 18
+    CBM.out_evHighPowerOn = FALSE
+    CBM.out_evFlightMode1 = FALSE
+    RADAR.in_evHighPowerOn = FALSE
+    AP.in_evFlightMode1 = FALSE
+  -> State: 1.192 <-
+    FC.timer = 4
+    AP.state = on
+  -> State: 1.193 <-
+    FC.timer = 5
+  -> State: 1.194 <-
+    FC.timer = 6
+  -> State: 1.195 <-
+    FC.timer = 7
+  -> State: 1.196 <-
+    FC.state = secondary_descent
+    FC.timer = 0
+    FC.out_evInstruct_value = 4
+    FC.out_evInstruct_valid = TRUE
+    FC.out_evInstruct = 4
+    CBM.in_evInstruct = 4
+  -> State: 1.197 <-
+    FC.timer = 1
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = tran
+    FC.out_evInstruct = 0
+    CBM.in_evInstruct = 0
+  -> State: 1.198 <-
+    FC.state = level_flight_3
+    FC.timer = 0
+    FC.out_evInstruct_value = 5
+    FC.out_evInstruct_valid = TRUE
+    CBM.state = idle
+    CBM.out_evFlightMode2_value = TRUE
+    CBM.out_evFlightMode2_valid = TRUE
+    FC.out_evInstruct = 5
+    CBM.out_evFlightMode2 = TRUE
+    CBM.in_evInstruct = 5
+    AP.in_evFlightMode2 = TRUE
+  -> State: 1.199 <-
+    FC.timer = 1
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = tran
+    CBM.out_evFlightMode2_valid = FALSE
+    AP.state = transition1
+    AP.out_current = 3
+    FC.out_evInstruct = 0
+    CBM.out_evFlightMode2 = FALSE
+    CBM.in_evInstruct = 0
+    AP.in_evFlightMode2 = FALSE
+  -> State: 1.200 <-
+    FC.timer = 2
+    CBM.state = idle
+    CBM.out_evFlightMode1_valid = TRUE
+    AP.state = on
+    CBM.out_evFlightMode1 = TRUE
+    AP.in_evFlightMode1 = TRUE
+  -> State: 1.201 <-
+    FC.timer = 3
+    CBM.out_evFlightMode1_valid = FALSE
+    AP.state = transition1
+    AP.out_current = 18
+    CBM.out_evFlightMode1 = FALSE
+    AP.in_evFlightMode1 = FALSE
+  -> State: 1.202 <-
+    FC.timer = 4
+    AP.state = on
+  -> State: 1.203 <-
+    FC.timer = 5
+    ... [已折叠 1 步纯计时器等待或总线空转状态] ...
+    ... [隐藏的状态区间: 1.204 到 1.204] ...
+  -> State: 1.205 <-
+    FC.timer = 7
+  -> State: 1.206 <-
+    FC.timer = 8
+  -> State: 1.207 <-
+    FC.state = landing_approach
+    FC.timer = 0
+    FC.out_evInstruct_value = 6
+    FC.out_evInstruct_valid = TRUE
+    FC.out_evInstruct = 6
+    CBM.in_evInstruct = 6
+  -> State: 1.208 <-
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = tran
+    FC.out_evInstruct = 0
+    CBM.in_evInstruct = 0
+  -> State: 1.209 <-
+    CBM.state = idle
+    CBM.out_evFlightMode3_value = TRUE
+    CBM.out_evFlightMode3_valid = TRUE
+    CBM.out_evFlightMode3 = TRUE
+    AP.in_evFlightMode3 = TRUE
+  -> State: 1.210 <-
+    CBM.out_evFlightMode3_valid = FALSE
+    AP.state = transition1
+    AP.out_current = 2
+    CBM.out_evFlightMode3 = FALSE
+    AP.in_evFlightMode3 = FALSE
+  -- Loop starts here
+  -> State: 1.211 <-
+    AP.state = on
+  -> State: 1.212 <-
+-- specification  G !(FC.state = idle & FC.state = finish)  is true
+-- specification  G !(BAT.state = idle & BAT.state = discharge)  is true
+-- specification  F FC.state = finish  is false
+-- as demonstrated by the following execution sequence
+Trace Description: LTL Counterexample 
+Trace Type: Counterexample 
+  -> State: 2.1 <-
+    FC.state = idle
+    FC.timer = 0
+    FC.out_evInstruct_value = 0
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = idle
+    CBM.timer = 0
+    CBM.out_evSensorPreparation_value = FALSE
+    CBM.out_evSensorPreparation_valid = FALSE
+    CBM.out_evActuatorEngage_value = FALSE
+    CBM.out_evActuatorEngage_valid = FALSE
+    CBM.out_evPayloadActivate_value = FALSE
+    CBM.out_evPayloadActivate_valid = FALSE
+    CBM.out_evFlightMode1_value = FALSE
+    CBM.out_evFlightMode1_valid = FALSE
+    CBM.out_evHighPowerOn_value = FALSE
+    CBM.out_evHighPowerOn_valid = FALSE
+    CBM.out_evFlightMode2_value = FALSE
+    CBM.out_evFlightMode2_valid = FALSE
+    CBM.out_evFlightMode3_value = FALSE
+    CBM.out_evFlightMode3_valid = FALSE
+    BAT.state = idle
+    BAT.timer = 0
+    BAT.out_voltage_value = 0
+    BAT.out_voltage_valid = FALSE
+    PL.state = off
+    PL.timer = 0
+    PL.out_current = 0
+    RADAR.state = off
+    RADAR.timer = 0
+    RADAR.out_current = 0
+    AP.state = off
+    AP.timer = 0
+    AP.out_current = 0
+    OP.state = idle
+    OP.timer = 0
+    OP.out_evstart_value = FALSE
+    OP.out_evstart_valid = FALSE
+    FC.out_evInstruct = 0
+    FC.in_evstart = FALSE
+    CBM.out_evFlightMode3 = FALSE
+    CBM.out_evFlightMode2 = FALSE
+    CBM.out_evHighPowerOn = FALSE
+    CBM.out_evFlightMode1 = FALSE
+    CBM.out_evPayloadActivate = FALSE
+    CBM.out_evActuatorEngage = FALSE
+    CBM.out_evSensorPreparation = FALSE
+    CBM.in_evInstruct = 0
+    BAT.out_voltage = 0
+    BAT.in_evstart = FALSE
+    PL.in_voltage = 0
+    PL.in_evPayloadActivate = FALSE
+    RADAR.in_voltage = 0
+    RADAR.in_evHighPowerOn = FALSE
+    RADAR.in_evSensorPreparation = FALSE
+    AP.in_voltage = 0
+    AP.in_evFlightMode3 = FALSE
+    AP.in_evFlightMode2 = FALSE
+    AP.in_evFlightMode1 = FALSE
+    AP.in_evActuatorEngage = FALSE
+    OP.out_evstart = FALSE
+  -> State: 2.2 <-
+    OP.state = off
+    OP.out_evstart_value = TRUE
+    OP.out_evstart_valid = TRUE
+    FC.in_evstart = TRUE
+    BAT.in_evstart = TRUE
+    OP.out_evstart = TRUE
+  -> State: 2.3 <-
+    FC.state = takeoff_climb0
+    BAT.state = power_on
+    OP.out_evstart_valid = FALSE
+    FC.in_evstart = FALSE
+    BAT.in_evstart = FALSE
+    OP.out_evstart = FALSE
+  -> State: 2.4 <-
+    FC.state = takeoff_climb
+    FC.out_evInstruct_value = 1
+    FC.out_evInstruct_valid = TRUE
+    BAT.state = discharge
+    BAT.out_voltage_value = 3
+    BAT.out_voltage_valid = TRUE
+    FC.out_evInstruct = 1
+    CBM.in_evInstruct = 1
+    BAT.out_voltage = 3
+    PL.in_voltage = 3
+    RADAR.in_voltage = 3
+    AP.in_voltage = 3
+  -> State: 2.5 <-
+    FC.timer = 1
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = tran
+    BAT.out_voltage_valid = FALSE
+    FC.out_evInstruct = 0
+    CBM.in_evInstruct = 0
+  -> State: 2.6 <-
+    FC.state = engine_pre_ignition
+    FC.timer = 0
+    FC.out_evInstruct_value = 2
+    FC.out_evInstruct_valid = TRUE
+    CBM.state = idle
+    CBM.out_evSensorPreparation_value = TRUE
+    CBM.out_evSensorPreparation_valid = TRUE
+    CBM.out_evActuatorEngage_value = TRUE
+    CBM.out_evActuatorEngage_valid = TRUE
+    FC.out_evInstruct = 2
+    CBM.out_evActuatorEngage = TRUE
+    CBM.out_evSensorPreparation = TRUE
+    CBM.in_evInstruct = 2
+    RADAR.in_evSensorPreparation = TRUE
+    AP.in_evActuatorEngage = TRUE
+  -> State: 2.7 <-
+    FC.timer = 1
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = tran
+    CBM.out_evSensorPreparation_valid = FALSE
+    CBM.out_evActuatorEngage_valid = FALSE
+    RADAR.state = pre_heat
+    RADAR.out_current = 1
+    AP.state = on
+    AP.out_current = 3
+    FC.out_evInstruct = 0
+    CBM.out_evActuatorEngage = FALSE
+    CBM.out_evSensorPreparation = FALSE
+    CBM.in_evInstruct = 0
+    RADAR.in_evSensorPreparation = FALSE
+    AP.in_evActuatorEngage = FALSE
+  -> State: 2.8 <-
+    FC.state = motor_ignition
+    FC.timer = 0
+    CBM.state = idle
+    CBM.out_evPayloadActivate_value = TRUE
+    CBM.out_evPayloadActivate_valid = TRUE
+    CBM.out_evPayloadActivate = TRUE
+    PL.in_evPayloadActivate = TRUE
+  -> State: 2.9 <-
+    FC.timer = 1
+    CBM.out_evPayloadActivate_valid = FALSE
+    PL.state = on
+    PL.out_current = 1
+    CBM.out_evPayloadActivate = FALSE
+    PL.in_evPayloadActivate = FALSE
+  -> State: 2.10 <-
+    FC.timer = 2
+    PL.timer = 1
+  -> State: 2.11 <-
+    FC.timer = 3
+    PL.state = over
+    PL.timer = 0
+    PL.out_current = 0
+  -> State: 2.12 <-
+    FC.timer = 4
+    ... [已折叠 15 步纯计时器等待或总线空转状态] ...
+    ... [隐藏的状态区间: 2.13 到 2.27] ...
+  -> State: 2.28 <-
+    FC.timer = 20
+  -> State: 2.29 <-
+    FC.timer = 21
+  -> State: 2.30 <-
+    FC.state = cruise_turn
+    FC.timer = 0
+  -> State: 2.31 <-
+    FC.timer = 1
+  -> State: 2.32 <-
+    FC.timer = 2
+    ... [已折叠 131 步纯计时器等待或总线空转状态] ...
+    ... [隐藏的状态区间: 2.33 到 2.163] ...
+  -> State: 2.164 <-
+    FC.timer = 134
+  -> State: 2.165 <-
+    FC.timer = 135
+  -> State: 2.166 <-
+    FC.state = descent
+    FC.timer = 0
+  -> State: 2.167 <-
+    FC.timer = 1
+  -> State: 2.168 <-
+    FC.timer = 2
+    ... [已折叠 17 步纯计时器等待或总线空转状态] ...
+    ... [隐藏的状态区间: 2.169 到 2.185] ...
+  -> State: 2.186 <-
+    FC.timer = 20
+  -> State: 2.187 <-
+    FC.timer = 21
+  -> State: 2.188 <-
+    FC.state = level_flight_2
+    FC.timer = 0
+    FC.out_evInstruct_value = 3
+    FC.out_evInstruct_valid = TRUE
+    FC.out_evInstruct = 3
+    CBM.in_evInstruct = 3
+  -> State: 2.189 <-
+    FC.timer = 1
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = tran
+    FC.out_evInstruct = 0
+    CBM.in_evInstruct = 0
+  -> State: 2.190 <-
+    FC.timer = 2
+    CBM.state = idle
+    CBM.out_evFlightMode1_value = TRUE
+    CBM.out_evFlightMode1_valid = TRUE
+    CBM.out_evHighPowerOn_value = TRUE
+    CBM.out_evHighPowerOn_valid = TRUE
+    CBM.out_evHighPowerOn = TRUE
+    CBM.out_evFlightMode1 = TRUE
+    RADAR.in_evHighPowerOn = TRUE
+    AP.in_evFlightMode1 = TRUE
+  -> State: 2.191 <-
+    FC.timer = 3
+    CBM.out_evFlightMode1_valid = FALSE
+    CBM.out_evHighPowerOn_valid = FALSE
+    RADAR.state = high_power_on
+    RADAR.out_current = 3
+    AP.state = transition1
+    AP.out_current = 18
+    CBM.out_evHighPowerOn = FALSE
+    CBM.out_evFlightMode1 = FALSE
+    RADAR.in_evHighPowerOn = FALSE
+    AP.in_evFlightMode1 = FALSE
+  -> State: 2.192 <-
+    FC.timer = 4
+    AP.state = on
+  -> State: 2.193 <-
+    FC.timer = 5
+  -> State: 2.194 <-
+    FC.timer = 6
+  -> State: 2.195 <-
+    FC.timer = 7
+  -> State: 2.196 <-
+    FC.state = secondary_descent
+    FC.timer = 0
+    FC.out_evInstruct_value = 4
+    FC.out_evInstruct_valid = TRUE
+    FC.out_evInstruct = 4
+    CBM.in_evInstruct = 4
+  -> State: 2.197 <-
+    FC.timer = 1
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = tran
+    FC.out_evInstruct = 0
+    CBM.in_evInstruct = 0
+  -> State: 2.198 <-
+    FC.state = level_flight_3
+    FC.timer = 0
+    FC.out_evInstruct_value = 5
+    FC.out_evInstruct_valid = TRUE
+    CBM.state = idle
+    CBM.out_evFlightMode2_value = TRUE
+    CBM.out_evFlightMode2_valid = TRUE
+    FC.out_evInstruct = 5
+    CBM.out_evFlightMode2 = TRUE
+    CBM.in_evInstruct = 5
+    AP.in_evFlightMode2 = TRUE
+  -> State: 2.199 <-
+    FC.timer = 1
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = tran
+    CBM.out_evFlightMode2_valid = FALSE
+    AP.state = transition1
+    AP.out_current = 3
+    FC.out_evInstruct = 0
+    CBM.out_evFlightMode2 = FALSE
+    CBM.in_evInstruct = 0
+    AP.in_evFlightMode2 = FALSE
+  -> State: 2.200 <-
+    FC.timer = 2
+    CBM.state = idle
+    CBM.out_evFlightMode1_valid = TRUE
+    AP.state = on
+    CBM.out_evFlightMode1 = TRUE
+    AP.in_evFlightMode1 = TRUE
+  -> State: 2.201 <-
+    FC.timer = 3
+    CBM.out_evFlightMode1_valid = FALSE
+    AP.state = transition1
+    AP.out_current = 18
+    CBM.out_evFlightMode1 = FALSE
+    AP.in_evFlightMode1 = FALSE
+  -> State: 2.202 <-
+    FC.timer = 4
+    AP.state = on
+  -> State: 2.203 <-
+    FC.timer = 5
+    ... [已折叠 1 步纯计时器等待或总线空转状态] ...
+    ... [隐藏的状态区间: 2.204 到 2.204] ...
+  -> State: 2.205 <-
+    FC.timer = 7
+  -> State: 2.206 <-
+    FC.timer = 8
+  -> State: 2.207 <-
+    FC.state = landing_approach
+    FC.timer = 0
+    FC.out_evInstruct_value = 6
+    FC.out_evInstruct_valid = TRUE
+    FC.out_evInstruct = 6
+    CBM.in_evInstruct = 6
+  -> State: 2.208 <-
+    FC.out_evInstruct_valid = FALSE
+    CBM.state = tran
+    FC.out_evInstruct = 0
+    CBM.in_evInstruct = 0
+  -> State: 2.209 <-
+    CBM.state = idle
+    CBM.out_evFlightMode3_value = TRUE
+    CBM.out_evFlightMode3_valid = TRUE
+    CBM.out_evFlightMode3 = TRUE
+    AP.in_evFlightMode3 = TRUE
+  -> State: 2.210 <-
+    CBM.out_evFlightMode3_valid = FALSE
+    AP.state = transition1
+    AP.out_current = 2
+    CBM.out_evFlightMode3 = FALSE
+    AP.in_evFlightMode3 = FALSE
+  -- Loop starts here
+  -> State: 2.211 <-
+    AP.state = on
+  -> State: 2.212 <-
+-- specification  F BAT.state = discharge  is true
+-- specification  G (BAT.state = discharge -> BAT.out_voltage = 3)  is true
+-- specification  G ((FC.state = idle & FC.in_evstart = TRUE) ->  F FC.state = takeoff_climb0)  is true
+-- specification  G (FC.state = idle -> (FC.state = idle U FC.in_evstart = TRUE))  is true
+-- specification  G (BAT.state = idle -> (BAT.state = idle U BAT.in_evstart = TRUE))  is true
+-- specification  G (FC.state = descent ->  F FC.out_evInstruct = 3)  is true
+-- specification  G (FC.state = level_flight_2 ->  F FC.out_evInstruct = 4)  is true
+-- specification  G (FC.state = secondary_descent ->  F FC.out_evInstruct = 5)  is true
+-- specification  G (FC.state = level_flight_3 ->  F FC.out_evInstruct = 6)  is true
+-- specification  G (CBM.in_evInstruct = 1 ->  F CBM.out_evSensorPreparation = TRUE)  is true
+-- specification  G (CBM.in_evInstruct = 1 ->  F CBM.out_evActuatorEngage = TRUE)  is true
+-- specification  G (CBM.in_evInstruct = 2 ->  F CBM.out_evPayloadActivate = TRUE)  is true
+-- specification  G (CBM.in_evInstruct = 3 ->  F CBM.out_evHighPowerOn = TRUE)  is true
+-- specification  G (CBM.in_evInstruct = 3 ->  F CBM.out_evFlightMode1 = TRUE)  is true
+-- specification  G (CBM.in_evInstruct = 4 ->  F CBM.out_evFlightMode2 = TRUE)  is true
+-- specification  G (CBM.in_evInstruct = 6 ->  F CBM.out_evFlightMode3 = TRUE)  is true
+-- specification  G (PL.state = on ->  F PL.state = over)  is true
+-- specification  G (PL.state = on -> (PL.state = on U PL.state = over))  is true
+-- specification  G !(RADAR.state = off & RADAR.state = high_power_on)  is true
+-- specification  G !(PL.state = on & PL.state = over)  is true
+-- specification  F RADAR.state = high_power_on  is true
+-- specification  F PL.state = over  is true
+-- specification  G (RADAR.state = pre_heat -> RADAR.out_current = 1)  is true
+-- specification  G (RADAR.state = high_power_on -> RADAR.out_current = 3)  is true
+-- specification  G (PL.state = on -> PL.out_current = 1)  is true
+-- specification  G (PL.state = over -> PL.out_current = 0)  is true
+-- specification  G ((PL.state = off & PL.in_evPayloadActivate = TRUE) ->  F PL.state = on)  is true
+-- specification  G (RADAR.in_evHighPowerOn = TRUE ->  F RADAR.state = high_power_on)  is true
+-- specification  G (RADAR.state = off -> (RADAR.state = off U RADAR.in_evSensorPreparation = TRUE))  is true
+-- specification  G (RADAR.state = pre_heat -> (RADAR.state = pre_heat U RADAR.in_evHighPowerOn = TRUE))  is true
+-- specification  G (PL.state = off -> (PL.state = off U PL.in_evPayloadActivate = TRUE))  is true
+-- specification  G (AP.state = transition1 ->  F AP.state = on)  is true
+-- specification  F AP.state = on  is true
+-- specification  G (AP.in_evFlightMode1 = TRUE ->  F AP.state = transition1)  is true
+-- specification  G (AP.in_evFlightMode2 = TRUE ->  F AP.state = transition1)  is true
+-- specification  G (AP.in_evFlightMode3 = TRUE ->  F AP.state = transition1)  is true
+-- specification  G (AP.state = off -> (AP.state = off U AP.in_evActuatorEngage = TRUE))  is true
+-- specification  G !(AP.state = off & AP.out_current = 18)  is true

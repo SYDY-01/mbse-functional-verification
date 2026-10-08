@@ -1,0 +1,386 @@
+couple UAV_System
+import Lo.ControlBusModule as ControlBusModule;
+import Lo.Battery as Battery;
+import Lo.Payload as Payload;
+import Lo.Radar as Radar;
+import Lo.AutoPilot as AutoPilot;
+import Lo.FlightMissionControl as FlightMissionControl;
+import Lo.oper as oper;
+part:
+  FlightMissionControl FC();
+  ControlBusModule CBM();
+  Battery BAT();
+  Payload PL();
+  Radar RADAR();
+  AutoPilot AP();
+  oper OP();
+connection:
+  connect(OP.evstart,FC.evstart);
+  connect(FC.evInstruct,CBM.evInstruct);
+  connect(CBM.evSensorPreparation,RADAR.evSensorPreparation);
+  connect(CBM.evActuatorEngage,AP.evActuatorEngage);
+  connect(CBM.evPayloadActivate,PL.evPayloadActivate);
+  connect(CBM.evFlightMode1,AP.evFlightMode1);
+  connect(CBM.evHighPowerOn,RADAR.evHighPowerOn);
+  connect(CBM.evFlightMode2,AP.evFlightMode2);
+  connect(CBM.evFlightMode3,AP.evFlightMode3);
+  connect(BAT.voltage,AP.voltage);
+  connect(BAT.voltage,PL.voltage);
+  connect(BAT.voltage,RADAR.voltage);
+  connect(OP.evstart,BAT.evstart);
+end;
+
+discrete AutoPilot
+port:
+  event input bool evActuatorEngage;
+  event input bool evFlightMode1;
+  event input bool evFlightMode2;
+  event input bool evFlightMode3;
+  event input real voltage;
+  event output real current;
+state:
+  initial state off
+    when entry() then
+      statehold(infinite);
+    end;
+    when receive(voltage) then
+      
+    end;
+    when receive(evActuatorEngage) then
+      current = 3;
+      transition(on);
+      
+    end;
+  end;
+  state on
+    when entry() then
+      statehold(infinite);
+    end;
+    when receive(evFlightMode1) then
+
+      transition(transition1);
+
+    end;
+    when receive(evFlightMode2) then
+      current = 3;
+      transition(transition1);
+
+    end;
+    when receive(evFlightMode3) then
+      current = 2;
+      transition(transition1);
+
+    end;
+  end;
+  state transition1
+    when entry() then
+      statehold(0);
+    end;
+    when timeover() then
+      current = 18;
+      transition(on);
+    end;
+  end;
+end;
+
+
+discrete Battery
+port:
+  event input bool evstart;
+  event output real voltage;
+state:
+  initial state idle
+    when entry() then
+      statehold(infinite);
+    end;
+    when receive(evstart) then
+      transition(power_on);
+      
+    end;
+  end;
+  state power_on
+    when entry() then
+      statehold(0);
+    end;
+    when timeover() then
+      transition(discharge);
+      out
+                   send(voltage,3);
+    end;
+  end;
+  state discharge
+    when entry() then
+      statehold(infinite);
+    end;
+  end;
+end;
+
+
+
+
+discrete ControlBusModule
+port:
+  event input real evInstruct;
+  event output bool evSensorPreparation;
+  event output bool evActuatorEngage;
+  event output bool evPayloadActivate;
+  event output bool evFlightMode1;
+  event output bool evHighPowerOn;
+  event output bool evFlightMode2;
+  event output bool evFlightMode3;
+state:
+  initial state idle
+    when entry() then
+      statehold(infinite);
+    end;
+    when receive(evInstruct) then
+      transition(tran);
+      
+    end;
+  end;
+  state tran
+    when entry() then
+      statehold(0);
+    end;
+    when timeover() then
+      transition(idle);
+      out
+                    if evInstruct == 1  then
+                     send(evSensorPreparation,true);
+                     send(evActuatorEngage,true);
+                    else if evInstruct == 2  then
+                      send(evPayloadActivate,true);
+                    else if evInstruct == 3  then
+                     send(evFlightMode1,true);
+                     send(evHighPowerOn,true);
+                    else if evInstruct == 4  then
+                     send(evFlightMode2,true);
+                    else if evInstruct == 5  then
+                     send(evFlightMode1,true);
+                    else 
+                      send(evFlightMode3,true);
+                    end;
+                     end;
+                      end;
+                       end;
+                       end;
+    end;
+  end;
+end;
+
+
+discrete FlightMissionControl
+port:
+  event input bool evstart;
+  event output real evInstruct;
+state:
+  initial state idle
+    when entry() then
+      statehold(infinite);
+    end;
+    when receive(evstart) then
+      transition(takeoff_climb0);
+      
+    end;
+  end;
+  state takeoff_climb0
+    when entry() then
+      statehold(0);
+    end;
+    when timeover() then
+      transition(takeoff_climb);
+      out
+                    send(evInstruct,1);
+    end;
+  end;
+  state takeoff_climb
+    when entry() then
+      statehold(1);
+    end;
+    when timeover() then
+      transition(engine_pre_ignition);
+      out
+                    send(evInstruct,2);
+    end;
+  end;
+  state engine_pre_ignition
+    when entry() then
+      statehold(1);
+    end;
+    when timeover() then
+      transition(motor_ignition);
+      
+    end;
+  end;
+  state motor_ignition
+    when entry() then
+      statehold(21);
+    end;
+    when timeover() then
+      transition(cruise_turn);
+      
+    end;
+  end;
+  state cruise_turn
+    when entry() then
+      statehold(135);
+    end;
+    when timeover() then
+      transition(descent);
+      
+    end;
+  end;
+  state descent
+    when entry() then
+      statehold(21);
+    end;
+    when timeover() then
+      transition(level_flight_2);
+      out
+                    send(evInstruct,3);
+    end;
+  end;
+  state level_flight_2
+    when entry() then
+      statehold(7);
+    end;
+    when timeover() then
+      transition(secondary_descent);
+      out
+                    send(evInstruct,4);
+    end;
+  end;
+  state secondary_descent
+    when entry() then
+      statehold(1);
+    end;
+    when timeover() then
+      transition(level_flight_3);
+      out
+                    send(evInstruct,5);
+    end;
+  end;
+  state level_flight_3
+    when entry() then
+      statehold(8);
+    end;
+    when timeover() then
+      transition(landing_approach);
+      out
+                    send(evInstruct,6);
+    end;
+  end;
+  state landing_approach
+    when entry() then
+      statehold(1);
+    end;
+    when timeover() then
+      transition(finish);
+      
+    end;
+  end;
+  state finish
+  end;
+end;
+
+
+
+discrete oper
+port:
+  event output bool evstart;
+state:
+  initial state idle
+    when entry() then
+      statehold(0);
+    end;
+    when timeover() then
+      transition(off);
+      out
+               send(evstart,true);
+    end;
+  end;
+  state off
+    when entry() then
+      statehold(infinite);
+    end;
+  end;
+end;
+
+
+
+
+discrete Payload
+port:
+  event input bool evPayloadActivate;
+  event input real voltage;
+  event output real current;
+state:
+  initial state off
+    when entry() then
+      statehold(infinite);
+    end;
+    when receive(voltage) then
+      
+    end;
+    when receive(evPayloadActivate) then
+      current = 1;
+      transition(on);
+      
+    end;
+  end;
+  state on
+    when entry() then
+      statehold(1);
+    end;
+    when timeover() then
+      current = 0;
+      transition(over);
+      
+    end;
+  end;
+  state over
+    when entry() then
+      statehold(infinite);
+    end;
+  end;
+end;
+
+
+discrete Radar
+port:
+  event input bool evSensorPreparation;
+  event input bool evHighPowerOn;
+  event input real voltage;
+  event output real current;
+state:
+  initial state off
+    when entry() then
+      statehold(infinite);
+    end;
+    when receive(voltage) then
+      
+    end;
+    when receive(evSensorPreparation) then
+      current = 1;
+      transition(pre_heat);
+      
+    end;
+  end;
+  state pre_heat
+    when entry() then
+      statehold(infinite);
+    end;
+    when receive(evHighPowerOn) then
+      current = 3;
+      transition(high_power_on);
+      
+    end;
+  end;
+  state high_power_on
+    when entry() then
+      statehold(infinite);
+    end;
+  end;
+end;
+
+

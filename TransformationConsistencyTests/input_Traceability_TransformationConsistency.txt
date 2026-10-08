@@ -1,0 +1,29 @@
+source(固定步测试组件, FixedStepProbe, STEP) {
+  state_source(初始状态, s0)
+  state_source(进入中间状态, s1)
+  state_source(进入完成状态, s2)
+}
+
+source(计时测试组件, TimerStepProbe, TIMER) {
+  state_source(初始状态, t0)
+  state_source(进入完成状态, t1)
+}
+source(条件栈测试组件, ConditionStackProbe, COND) {
+  state_source(等待判定状态, waiting)
+  state_source(分支完成状态, done)
+  condition_source(选择值二, selector = 2)
+  value_source(输出优先分支结果, result = 20)
+  value_source(输出次优先分支结果, result = 30)
+}
+
+source(信号发送组件, SignalSenderProbe, SENDER) {
+  state_source(发送状态, emit)
+  state_source(发送完成状态, done)
+  event_source(发出测试信号, signal = TRUE)
+}
+
+source(信号接收组件, SignalReceiverProbe, RECEIVER) {
+  state_source(等待接收状态, waiting)
+  state_source(接收完成状态, received)
+  condition_source(收到测试信号, signal = TRUE)
+}

@@ -1,0 +1,249 @@
+
+---------------------------------------------------------
+-- MODULE: FixedStepProbe
+---------------------------------------------------------
+MODULE FixedStepProbe
+VAR
+    state : {s0, s1, s2};
+    timer : 0..1;
+    out_marker : boolean;
+    out_marker_valid : boolean;
+ASSIGN
+    init(state) := s0;
+    init(timer) := 0;
+    init(out_marker) := FALSE;
+    init(out_marker_valid) := FALSE;
+
+    -- ====== 状态转移逻辑 ======
+    next(state) := case
+        state = s0 & timer >= 0 : s1;
+        state = s1 & timer >= 0 : s2;
+        TRUE : state;
+    esac;
+
+    -- ====== 变量与行为更新逻辑 ======
+    next(out_marker) := out_marker;
+    next(out_marker_valid) := FALSE;
+
+    -- ====== 计时器 (Timer) 逻辑 ======
+    next(timer) := case
+        (state = s0 & timer >= 0) : 0;
+        state = s0 & timer < 0 : timer + 1;
+        state = s0 & timer >= 0 : timer;
+        (state = s1 & timer >= 0) : 0;
+        state = s1 & timer < 0 : timer + 1;
+        state = s1 & timer >= 0 : timer;
+        TRUE : timer;
+    esac;
+
+---------------------------------------------------------
+-- MODULE: TimerStepProbe
+---------------------------------------------------------
+MODULE TimerStepProbe
+VAR
+    state : {t0, t1};
+    timer : 0..1;
+    out_marker : boolean;
+    out_marker_valid : boolean;
+ASSIGN
+    init(state) := t0;
+    init(timer) := 0;
+    init(out_marker) := FALSE;
+    init(out_marker_valid) := FALSE;
+
+    -- ====== 状态转移逻辑 ======
+    next(state) := case
+        state = t0 & timer >= 1 : t1;
+        TRUE : state;
+    esac;
+
+    -- ====== 变量与行为更新逻辑 ======
+    next(out_marker) := out_marker;
+    next(out_marker_valid) := FALSE;
+
+    -- ====== 计时器 (Timer) 逻辑 ======
+    next(timer) := case
+        (state = t0 & timer >= 1) : 0;
+        state = t0 & timer < 1 : timer + 1;
+        state = t0 & timer >= 1 : timer;
+        TRUE : timer;
+    esac;
+
+---------------------------------------------------------
+-- MODULE: ConditionInputProbe
+---------------------------------------------------------
+MODULE ConditionInputProbe
+VAR
+    state : {emit, done};
+    timer : 0..1;
+    out_selector : 0..2;
+    out_selector_valid : boolean;
+ASSIGN
+    init(state) := emit;
+    init(timer) := 0;
+    init(out_selector) := 0;
+    init(out_selector_valid) := FALSE;
+
+    -- ====== 状态转移逻辑 ======
+    next(state) := case
+        state = emit & timer >= 0 : done;
+        TRUE : state;
+    esac;
+
+    -- ====== 变量与行为更新逻辑 ======
+    next(out_selector) := case
+        (state = emit & timer >= 0) : 2;
+        TRUE : out_selector;
+    esac;
+    next(out_selector_valid) := case
+        (state = emit & timer >= 0) : TRUE;
+        TRUE : FALSE;
+    esac;
+
+    -- ====== 计时器 (Timer) 逻辑 ======
+    next(timer) := case
+        (state = emit & timer >= 0) : 0;
+        state = emit & timer < 0 : timer + 1;
+        state = emit & timer >= 0 : timer;
+        TRUE : timer;
+    esac;
+
+---------------------------------------------------------
+-- MODULE: ConditionStackProbe
+---------------------------------------------------------
+MODULE ConditionStackProbe(in_selector_value, in_selector_valid)
+VAR
+    state : {waiting, done};
+    timer : 0..1;
+    out_result : 0..30;
+    out_result_valid : boolean;
+DEFINE
+    in_selector := case
+        in_selector_valid : in_selector_value;
+        TRUE : 0;
+    esac;
+ASSIGN
+    init(state) := waiting;
+    init(timer) := 0;
+    init(out_result) := 0;
+    init(out_result_valid) := FALSE;
+
+    -- ====== 状态转移逻辑 ======
+    next(state) := case
+        state = waiting & in_selector_valid = TRUE : done;
+        TRUE : state;
+    esac;
+
+    -- ====== 变量与行为更新逻辑 ======
+    next(out_result) := case
+        (state = waiting & in_selector_valid = TRUE) & (in_selector_value<=3 & in_selector_value=2) : 20;
+        (state = waiting & in_selector_valid = TRUE) & (in_selector_value<=3 & ! (in_selector_value=2) & in_selector_value>=2) : 30;
+        (state = waiting & in_selector_valid = TRUE) & (in_selector_value<=3 & ! (in_selector_value=2) & ! (in_selector_value>=2)) : 10;
+        (state = waiting & in_selector_valid = TRUE) & (! (in_selector_value<=3)) : 0;
+        TRUE : out_result;
+    esac;
+    next(out_result_valid) := case
+        (state = waiting & in_selector_valid = TRUE) & (in_selector_value<=3 & in_selector_value=2) : TRUE;
+        (state = waiting & in_selector_valid = TRUE) & (in_selector_value<=3 & ! (in_selector_value=2) & in_selector_value>=2) : TRUE;
+        (state = waiting & in_selector_valid = TRUE) & (in_selector_value<=3 & ! (in_selector_value=2) & ! (in_selector_value>=2)) : TRUE;
+        (state = waiting & in_selector_valid = TRUE) & (! (in_selector_value<=3)) : TRUE;
+        TRUE : FALSE;
+    esac;
+
+    -- ====== 计时器 (Timer) 逻辑 ======
+    next(timer) := case
+        (state = waiting & in_selector_valid = TRUE) : 0;
+        TRUE : timer;
+    esac;
+
+---------------------------------------------------------
+-- MODULE: SignalSenderProbe
+---------------------------------------------------------
+MODULE SignalSenderProbe
+VAR
+    state : {emit, done};
+    timer : 0..1;
+    out_signal : boolean;
+    out_signal_valid : boolean;
+ASSIGN
+    init(state) := emit;
+    init(timer) := 0;
+    init(out_signal) := FALSE;
+    init(out_signal_valid) := FALSE;
+
+    -- ====== 状态转移逻辑 ======
+    next(state) := case
+        state = emit & timer >= 0 : done;
+        TRUE : state;
+    esac;
+
+    -- ====== 变量与行为更新逻辑 ======
+    next(out_signal) := case
+        (state = emit & timer >= 0) : TRUE;
+        TRUE : out_signal;
+    esac;
+    next(out_signal_valid) := case
+        (state = emit & timer >= 0) : TRUE;
+        TRUE : FALSE;
+    esac;
+
+    -- ====== 计时器 (Timer) 逻辑 ======
+    next(timer) := case
+        (state = emit & timer >= 0) : 0;
+        state = emit & timer < 0 : timer + 1;
+        state = emit & timer >= 0 : timer;
+        TRUE : timer;
+    esac;
+
+---------------------------------------------------------
+-- MODULE: SignalReceiverProbe
+---------------------------------------------------------
+MODULE SignalReceiverProbe(in_signal_value, in_signal_valid)
+VAR
+    state : {waiting, received};
+    timer : 0..1;
+DEFINE
+    in_signal := case
+        in_signal_valid : in_signal_value;
+        TRUE : FALSE;
+    esac;
+ASSIGN
+    init(state) := waiting;
+    init(timer) := 0;
+
+    -- ====== 状态转移逻辑 ======
+    next(state) := case
+        state = waiting & in_signal_valid = TRUE : received;
+        TRUE : state;
+    esac;
+
+    -- ====== 变量与行为更新逻辑 ======
+
+    -- ====== 计时器 (Timer) 逻辑 ======
+    next(timer) := case
+        (state = waiting & in_signal_valid = TRUE) : 0;
+        TRUE : timer;
+    esac;
+
+---------------------------------------------------------
+-- 主模块：耦合系统 (TransformationConsistencyTestSystem)
+---------------------------------------------------------
+MODULE main
+VAR
+    STEP : FixedStepProbe();
+    TIMER : TimerStepProbe();
+    COND_INPUT : ConditionInputProbe();
+    COND : ConditionStackProbe(COND_INPUT.out_selector, COND_INPUT.out_selector_valid);
+    SENDER : SignalSenderProbe();
+    RECEIVER : SignalReceiverProbe(SENDER.out_signal, SENDER.out_signal_valid);
+
+SPEC AG ((STEP.state = s0) -> AX (STEP.state = s1));
+SPEC AG ((STEP.state = s0) -> AX (AX (STEP.state = s2)));
+SPEC AG ((STEP.state = s0) -> AX (STEP.state = s2));
+SPEC AG ((TIMER.state = t0) -> AX (AX (TIMER.state = t1)));
+SPEC AG ((TIMER.state = t0) -> AX (TIMER.state = t1));
+SPEC AG (((COND.state = waiting) & (COND.in_selector = 2)) -> AX (COND.out_result = 20));
+SPEC AG (((COND.state = waiting) & (COND.in_selector = 2)) -> AX (COND.out_result = 30));
+SPEC AG ((SENDER.state = emit) -> (RECEIVER.in_signal = TRUE));
+SPEC AG ((SENDER.state = emit) -> AX (RECEIVER.in_signal = TRUE));
+SPEC AG ((SENDER.state = emit) -> AX (AX (RECEIVER.state = received)));

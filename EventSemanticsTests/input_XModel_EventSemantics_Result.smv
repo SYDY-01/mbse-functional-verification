@@ -1,0 +1,84 @@
+
+---------------------------------------------------------
+-- MODULE: SingleEventSender
+---------------------------------------------------------
+MODULE SingleEventSender
+VAR
+    state : {ready, done};
+    timer : 0..1;
+    out_evPulse_value : boolean;
+    out_evPulse_valid : boolean;
+DEFINE
+    out_evPulse := case
+        out_evPulse_valid : out_evPulse_value;
+        TRUE : FALSE;
+    esac;
+ASSIGN
+    init(state) := ready;
+    init(timer) := 0;
+    init(out_evPulse_value) := FALSE;
+    init(out_evPulse_valid) := FALSE;
+
+    -- ====== 状态转移逻辑 ======
+    next(state) := case
+        state = ready & timer >= 0 : done;
+        TRUE : state;
+    esac;
+
+    -- ====== 变量与行为更新逻辑 ======
+    next(out_evPulse_value) := case
+        (state = ready & timer >= 0) : TRUE;
+        TRUE : out_evPulse_value;
+    esac;
+    next(out_evPulse_valid) := case
+        (state = ready & timer >= 0) : TRUE;
+        TRUE : FALSE;
+    esac;
+
+    -- ====== 计时器 (Timer) 逻辑 ======
+    next(timer) := case
+        (state = ready & timer >= 0) : 0;
+        state = ready & timer < 0 : timer + 1;
+        state = ready & timer >= 0 : timer;
+        TRUE : timer;
+    esac;
+
+---------------------------------------------------------
+-- MODULE: EventConsumptionReceiver
+---------------------------------------------------------
+MODULE EventConsumptionReceiver(in_evPulse_value, in_evPulse_valid)
+VAR
+    state : {waiting, received, repeated};
+    timer : 0..1;
+DEFINE
+    in_evPulse := case
+        in_evPulse_valid : in_evPulse_value;
+        TRUE : FALSE;
+    esac;
+ASSIGN
+    init(state) := waiting;
+    init(timer) := 0;
+
+    -- ====== 状态转移逻辑 ======
+    next(state) := case
+        state = waiting & in_evPulse_valid = TRUE : received;
+        state = received & in_evPulse_valid = TRUE : repeated;
+        TRUE : state;
+    esac;
+
+    -- ====== 变量与行为更新逻辑 ======
+
+    -- ====== 计时器 (Timer) 逻辑 ======
+    next(timer) := case
+        (state = waiting & in_evPulse_valid = TRUE) : 0;
+        (state = received & in_evPulse_valid = TRUE) : 0;
+        TRUE : timer;
+    esac;
+
+---------------------------------------------------------
+-- 主模块：耦合系统 (EventSemanticsTestSystem)
+---------------------------------------------------------
+MODULE main
+VAR
+    SENDER : SingleEventSender;
+    RECEIVER : EventConsumptionReceiver(SENDER.out_evPulse_value, SENDER.out_evPulse_valid);

@@ -1,0 +1,178 @@
+couple TransformationConsistencyTestSystem
+import Lo.FixedStepProbe as FixedStepProbe;
+import Lo.TimerStepProbe as TimerStepProbe;
+import Lo.ConditionInputProbe as ConditionInputProbe;
+import Lo.ConditionStackProbe as ConditionStackProbe;
+import Lo.SignalSenderProbe as SignalSenderProbe;
+import Lo.SignalReceiverProbe as SignalReceiverProbe;
+
+part:
+  FixedStepProbe STEP();
+  TimerStepProbe TIMER();
+
+  ConditionInputProbe COND_INPUT();
+  ConditionStackProbe COND();
+
+  SignalSenderProbe SENDER();
+  SignalReceiverProbe RECEIVER();
+
+connection:
+  connect(COND_INPUT.selector,COND.selector);
+  connect(SENDER.signal,RECEIVER.signal);
+end;
+
+
+discrete FixedStepProbe
+port:
+  event output bool marker;
+state:
+  initial state s0
+    when entry() then
+      statehold(0);
+    end;
+    when timeover() then
+      transition(s1);
+    end;
+  end;
+
+  state s1
+    when entry() then
+      statehold(0);
+    end;
+    when timeover() then
+      transition(s2);
+    end;
+  end;
+
+  state s2
+    when entry() then
+      statehold(infinite);
+    end;
+  end;
+end;
+
+
+discrete TimerStepProbe
+port:
+  event output bool marker;
+state:
+  initial state t0
+    when entry() then
+      statehold(1);
+    end;
+    when timeover() then
+      transition(t1);
+    end;
+  end;
+
+  state t1
+    when entry() then
+      statehold(infinite);
+    end;
+  end;
+end;
+
+
+discrete ConditionInputProbe
+port:
+  event output real selector;
+state:
+  initial state emit
+    when entry() then
+      statehold(0);
+    end;
+    when timeover() then
+      transition(done);
+      out
+        send(selector,2);
+    end;
+  end;
+
+  state done
+    when entry() then
+      statehold(infinite);
+    end;
+  end;
+end;
+
+
+discrete ConditionStackProbe
+port:
+  event input real selector;
+  event output real result;
+state:
+  initial state waiting
+    when entry() then
+      statehold(infinite);
+    end;
+
+    when receive(selector) then
+      transition(done);
+      out
+        if selector <= 3 then
+          if selector == 2 then
+            send(result,20);
+          else if selector >= 2 then
+            send(result,30);
+          else
+            send(result,10);
+          end;
+          end;
+        else
+          send(result,0);
+        end;
+    end;
+  end;
+
+  state done
+    when entry() then
+      statehold(infinite);
+    end;
+  end;
+end;
+
+
+discrete SignalSenderProbe
+port:
+  event output bool signal;
+state:
+  initial state emit
+    when entry() then
+      statehold(0);
+    end;
+
+    when timeover() then
+      transition(done);
+      out
+        send(signal,true);
+    end;
+  end;
+
+  state done
+    when entry() then
+      statehold(infinite);
+    end;
+  end;
+end;
+
+
+discrete SignalReceiverProbe
+port:
+  event input bool signal;
+state:
+  initial state waiting
+    when entry() then
+      statehold(infinite);
+    end;
+
+    when receive(signal) then
+      transition(received);
+    end;
+  end;
+
+  state received
+    when entry() then
+      statehold(infinite);
+    end;
+  end;
+end;

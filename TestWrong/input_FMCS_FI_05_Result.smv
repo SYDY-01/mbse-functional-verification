@@ -1,0 +1,588 @@
+
+---------------------------------------------------------
+-- MODULE: AutoPilot
+---------------------------------------------------------
+MODULE AutoPilot(in_evActuatorEngage_value, in_evActuatorEngage_valid, in_evFlightMode1_value, in_evFlightMode1_valid, in_evFlightMode2_value, in_evFlightMode2_valid, in_evFlightMode3_value, in_evFlightMode3_valid, in_voltage_value, in_voltage_valid)
+VAR
+    state : {off, on, transition1};
+    timer : 0..1;
+    out_current : 0..18;
+DEFINE
+    in_evActuatorEngage := case
+        in_evActuatorEngage_valid : in_evActuatorEngage_value;
+        TRUE : FALSE;
+    esac;
+    in_evFlightMode1 := case
+        in_evFlightMode1_valid : in_evFlightMode1_value;
+        TRUE : FALSE;
+    esac;
+    in_evFlightMode2 := case
+        in_evFlightMode2_valid : in_evFlightMode2_value;
+        TRUE : FALSE;
+    esac;
+    in_evFlightMode3 := case
+        in_evFlightMode3_valid : in_evFlightMode3_value;
+        TRUE : FALSE;
+    esac;
+    in_voltage := in_voltage_value;
+ASSIGN
+    init(state) := off;
+    init(timer) := 0;
+    init(out_current) := 0;
+
+    -- ====== 状态转移逻辑 ======
+    next(state) := case
+        state = off & in_evActuatorEngage_valid = TRUE : on;
+        state = on & in_evFlightMode1_valid = TRUE : off;
+        state = on & in_evFlightMode2_valid = TRUE : transition1;
+        state = on & in_evFlightMode3_valid = TRUE : transition1;
+        state = transition1 & timer >= 0 : on;
+        TRUE : state;
+    esac;
+
+    -- ====== 变量与行为更新逻辑 ======
+    next(out_current) := case
+        (state = off & in_evActuatorEngage_valid = TRUE) : 3;
+        (state = on & in_evFlightMode1_valid = TRUE) : 18;
+        (state = on & in_evFlightMode2_valid = TRUE) : 3;
+        (state = on & in_evFlightMode3_valid = TRUE) : 2;
+        TRUE : out_current;
+    esac;
+
+    -- ====== 计时器 (Timer) 逻辑 ======
+    next(timer) := case
+        (state = off & in_evActuatorEngage_valid = TRUE) : 0;
+        (state = on & in_evFlightMode1_valid = TRUE) | (state = on & in_evFlightMode2_valid = TRUE) | (state = on & in_evFlightMode3_valid = TRUE) : 0;
+        (state = transition1 & timer >= 0) : 0;
+        state = transition1 & timer < 0 : timer + 1;
+        state = transition1 & timer >= 0 : timer;
+        TRUE : timer;
+    esac;
+
+---------------------------------------------------------
+-- MODULE: Battery
+---------------------------------------------------------
+MODULE Battery(in_evstart_value, in_evstart_valid)
+VAR
+    state : {idle, power_on, discharge};
+    timer : 0..1;
+    out_voltage_value : 0..3;
+    out_voltage_valid : boolean;
+DEFINE
+    in_evstart := case
+        in_evstart_valid : in_evstart_value;
+        TRUE : FALSE;
+    esac;
+    out_voltage := out_voltage_value;
+ASSIGN
+    init(state) := idle;
+    init(timer) := 0;
+    init(out_voltage_value) := 0;
+    init(out_voltage_valid) := FALSE;
+
+    -- ====== 状态转移逻辑 ======
+    next(state) := case
+        state = idle & in_evstart_valid = TRUE : power_on;
+        state = power_on & timer >= 0 : discharge;
+        TRUE : state;
+    esac;
+
+    -- ====== 变量与行为更新逻辑 ======
+    next(out_voltage_value) := case
+        (state = power_on & timer >= 0) : 3;
+        TRUE : out_voltage_value;
+    esac;
+    next(out_voltage_valid) := case
+        (state = power_on & timer >= 0) : TRUE;
+        TRUE : FALSE;
+    esac;
+
+    -- ====== 计时器 (Timer) 逻辑 ======
+    next(timer) := case
+        (state = idle & in_evstart_valid = TRUE) : 0;
+        (state = power_on & timer >= 0) : 0;
+        state = power_on & timer < 0 : timer + 1;
+        state = power_on & timer >= 0 : timer;
+        TRUE : timer;
+    esac;
+
+---------------------------------------------------------
+-- MODULE: ControlBusModule
+---------------------------------------------------------
+MODULE ControlBusModule(in_evInstruct_value, in_evInstruct_valid)
+VAR
+    state : {idle, tran};
+    timer : 0..1;
+    out_evSensorPreparation_value : boolean;
+    out_evSensorPreparation_valid : boolean;
+    out_evActuatorEngage_value : boolean;
+    out_evActuatorEngage_valid : boolean;
+    out_evPayloadActivate_value : boolean;
+    out_evPayloadActivate_valid : boolean;
+    out_evFlightMode1_value : boolean;
+    out_evFlightMode1_valid : boolean;
+    out_evHighPowerOn_value : boolean;
+    out_evHighPowerOn_valid : boolean;
+    out_evFlightMode2_value : boolean;
+    out_evFlightMode2_valid : boolean;
+    out_evFlightMode3_value : boolean;
+    out_evFlightMode3_valid : boolean;
+DEFINE
+    in_evInstruct := case
+        in_evInstruct_valid : in_evInstruct_value;
+        TRUE : 0;
+    esac;
+    out_evSensorPreparation := case
+        out_evSensorPreparation_valid : out_evSensorPreparation_value;
+        TRUE : FALSE;
+    esac;
+    out_evActuatorEngage := case
+        out_evActuatorEngage_valid : out_evActuatorEngage_value;
+        TRUE : FALSE;
+    esac;
+    out_evPayloadActivate := case
+        out_evPayloadActivate_valid : out_evPayloadActivate_value;
+        TRUE : FALSE;
+    esac;
+    out_evFlightMode1 := case
+        out_evFlightMode1_valid : out_evFlightMode1_value;
+        TRUE : FALSE;
+    esac;
+    out_evHighPowerOn := case
+        out_evHighPowerOn_valid : out_evHighPowerOn_value;
+        TRUE : FALSE;
+    esac;
+    out_evFlightMode2 := case
+        out_evFlightMode2_valid : out_evFlightMode2_value;
+        TRUE : FALSE;
+    esac;
+    out_evFlightMode3 := case
+        out_evFlightMode3_valid : out_evFlightMode3_value;
+        TRUE : FALSE;
+    esac;
+ASSIGN
+    init(state) := idle;
+    init(timer) := 0;
+    init(out_evSensorPreparation_value) := FALSE;
+    init(out_evSensorPreparation_valid) := FALSE;
+    init(out_evActuatorEngage_value) := FALSE;
+    init(out_evActuatorEngage_valid) := FALSE;
+    init(out_evPayloadActivate_value) := FALSE;
+    init(out_evPayloadActivate_valid) := FALSE;
+    init(out_evFlightMode1_value) := FALSE;
+    init(out_evFlightMode1_valid) := FALSE;
+    init(out_evHighPowerOn_value) := FALSE;
+    init(out_evHighPowerOn_valid) := FALSE;
+    init(out_evFlightMode2_value) := FALSE;
+    init(out_evFlightMode2_valid) := FALSE;
+    init(out_evFlightMode3_value) := FALSE;
+    init(out_evFlightMode3_valid) := FALSE;
+
+    -- ====== 状态转移逻辑 ======
+    next(state) := case
+        state = idle & in_evInstruct_valid = TRUE : tran;
+        state = tran & timer >= 0 : idle;
+        TRUE : state;
+    esac;
+
+    -- ====== 变量与行为更新逻辑 ======
+    next(out_evSensorPreparation_value) := case
+        (state = tran & timer >= 0) & (in_evInstruct_value=1) : TRUE;
+        TRUE : out_evSensorPreparation_value;
+    esac;
+    next(out_evActuatorEngage_value) := case
+        (state = tran & timer >= 0) & (in_evInstruct_value=1) : TRUE;
+        TRUE : out_evActuatorEngage_value;
+    esac;
+    next(out_evPayloadActivate_value) := case
+        (state = tran & timer >= 0) & (! (in_evInstruct_value=1) & in_evInstruct_value=2) : TRUE;
+        TRUE : out_evPayloadActivate_value;
+    esac;
+    next(out_evFlightMode1_value) := case
+        (state = tran & timer >= 0) & (! (in_evInstruct_value=1) & ! (in_evInstruct_value=2) & in_evInstruct_value=3) : TRUE;
+        (state = tran & timer >= 0) & (! (in_evInstruct_value=1) & ! (in_evInstruct_value=2) & ! (in_evInstruct_value=3) & ! (in_evInstruct_value=4) & in_evInstruct_value=5) : TRUE;
+        TRUE : out_evFlightMode1_value;
+    esac;
+    next(out_evHighPowerOn_value) := case
+        (state = tran & timer >= 0) & (! (in_evInstruct_value=1) & ! (in_evInstruct_value=2) & in_evInstruct_value=3) : TRUE;
+        TRUE : out_evHighPowerOn_value;
+    esac;
+    next(out_evFlightMode2_value) := case
+        (state = tran & timer >= 0) & (! (in_evInstruct_value=1) & ! (in_evInstruct_value=2) & ! (in_evInstruct_value=3) & in_evInstruct_value=4) : TRUE;
+        TRUE : out_evFlightMode2_value;
+    esac;
+    next(out_evFlightMode3_value) := case
+        (state = tran & timer >= 0) & (! (in_evInstruct_value=1) & ! (in_evInstruct_value=2) & ! (in_evInstruct_value=3) & ! (in_evInstruct_value=4) & ! (in_evInstruct_value=5)) : TRUE;
+        TRUE : out_evFlightMode3_value;
+    esac;
+    next(out_evSensorPreparation_valid) := case
+        (state = tran & timer >= 0) & (in_evInstruct_value=1) : TRUE;
+        TRUE : FALSE;
+    esac;
+    next(out_evActuatorEngage_valid) := case
+        (state = tran & timer >= 0) & (in_evInstruct_value=1) : TRUE;
+        TRUE : FALSE;
+    esac;
+    next(out_evPayloadActivate_valid) := case
+        (state = tran & timer >= 0) & (! (in_evInstruct_value=1) & in_evInstruct_value=2) : TRUE;
+        TRUE : FALSE;
+    esac;
+    next(out_evFlightMode1_valid) := case
+        (state = tran & timer >= 0) & (! (in_evInstruct_value=1) & ! (in_evInstruct_value=2) & in_evInstruct_value=3) : TRUE;
+        (state = tran & timer >= 0) & (! (in_evInstruct_value=1) & ! (in_evInstruct_value=2) & ! (in_evInstruct_value=3) & ! (in_evInstruct_value=4) & in_evInstruct_value=5) : TRUE;
+        TRUE : FALSE;
+    esac;
+    next(out_evHighPowerOn_valid) := case
+        (state = tran & timer >= 0) & (! (in_evInstruct_value=1) & ! (in_evInstruct_value=2) & in_evInstruct_value=3) : TRUE;
+        TRUE : FALSE;
+    esac;
+    next(out_evFlightMode2_valid) := case
+        (state = tran & timer >= 0) & (! (in_evInstruct_value=1) & ! (in_evInstruct_value=2) & ! (in_evInstruct_value=3) & in_evInstruct_value=4) : TRUE;
+        TRUE : FALSE;
+    esac;
+    next(out_evFlightMode3_valid) := case
+        (state = tran & timer >= 0) & (! (in_evInstruct_value=1) & ! (in_evInstruct_value=2) & ! (in_evInstruct_value=3) & ! (in_evInstruct_value=4) & ! (in_evInstruct_value=5)) : TRUE;
+        TRUE : FALSE;
+    esac;
+
+    -- ====== 计时器 (Timer) 逻辑 ======
+    next(timer) := case
+        (state = idle & in_evInstruct_valid = TRUE) : 0;
+        (state = tran & timer >= 0) : 0;
+        state = tran & timer < 0 : timer + 1;
+        state = tran & timer >= 0 : timer;
+        TRUE : timer;
+    esac;
+
+---------------------------------------------------------
+-- MODULE: FlightMissionControl
+---------------------------------------------------------
+MODULE FlightMissionControl(in_evstart_value, in_evstart_valid)
+VAR
+    state : {idle, takeoff_climb0, takeoff_climb, engine_pre_ignition, motor_ignition, cruise_turn, descent, level_flight_2, secondary_descent, level_flight_3, landing_approach, finish};
+    timer : 0..135;
+    out_evInstruct_value : 0..6;
+    out_evInstruct_valid : boolean;
+DEFINE
+    in_evstart := case
+        in_evstart_valid : in_evstart_value;
+        TRUE : FALSE;
+    esac;
+    out_evInstruct := case
+        out_evInstruct_valid : out_evInstruct_value;
+        TRUE : 0;
+    esac;
+ASSIGN
+    init(state) := idle;
+    init(timer) := 0;
+    init(out_evInstruct_value) := 0;
+    init(out_evInstruct_valid) := FALSE;
+
+    -- ====== 状态转移逻辑 ======
+    next(state) := case
+        state = idle & in_evstart_valid = TRUE : takeoff_climb0;
+        state = takeoff_climb0 & timer >= 0 : takeoff_climb;
+        state = takeoff_climb & timer >= 1 : engine_pre_ignition;
+        state = engine_pre_ignition & timer >= 1 : motor_ignition;
+        state = motor_ignition & timer >= 21 : cruise_turn;
+        state = cruise_turn & timer >= 135 : descent;
+        state = descent & timer >= 21 : level_flight_2;
+        state = level_flight_2 & timer >= 7 : secondary_descent;
+        state = secondary_descent & timer >= 1 : level_flight_3;
+        state = level_flight_3 & timer >= 8 : landing_approach;
+        state = landing_approach & timer >= 1 : finish;
+        TRUE : state;
+    esac;
+
+    -- ====== 变量与行为更新逻辑 ======
+    next(out_evInstruct_value) := case
+        (state = takeoff_climb0 & timer >= 0) : 1;
+        (state = takeoff_climb & timer >= 1) : 2;
+        (state = descent & timer >= 21) : 3;
+        (state = level_flight_2 & timer >= 7) : 4;
+        (state = secondary_descent & timer >= 1) : 5;
+        (state = level_flight_3 & timer >= 8) : 6;
+        TRUE : out_evInstruct_value;
+    esac;
+    next(out_evInstruct_valid) := case
+        (state = takeoff_climb0 & timer >= 0) : TRUE;
+        (state = takeoff_climb & timer >= 1) : TRUE;
+        (state = descent & timer >= 21) : TRUE;
+        (state = level_flight_2 & timer >= 7) : TRUE;
+        (state = secondary_descent & timer >= 1) : TRUE;
+        (state = level_flight_3 & timer >= 8) : TRUE;
+        TRUE : FALSE;
+    esac;
+
+    -- ====== 计时器 (Timer) 逻辑 ======
+    next(timer) := case
+        (state = idle & in_evstart_valid = TRUE) : 0;
+        (state = takeoff_climb0 & timer >= 0) : 0;
+        state = takeoff_climb0 & timer < 0 : timer + 1;
+        state = takeoff_climb0 & timer >= 0 : timer;
+        (state = takeoff_climb & timer >= 1) : 0;
+        state = takeoff_climb & timer < 1 : timer + 1;
+        state = takeoff_climb & timer >= 1 : timer;
+        (state = engine_pre_ignition & timer >= 1) : 0;
+        state = engine_pre_ignition & timer < 1 : timer + 1;
+        state = engine_pre_ignition & timer >= 1 : timer;
+        (state = motor_ignition & timer >= 21) : 0;
+        state = motor_ignition & timer < 21 : timer + 1;
+        state = motor_ignition & timer >= 21 : timer;
+        (state = cruise_turn & timer >= 135) : 0;
+        state = cruise_turn & timer < 135 : timer + 1;
+        state = cruise_turn & timer >= 135 : timer;
+        (state = descent & timer >= 21) : 0;
+        state = descent & timer < 21 : timer + 1;
+        state = descent & timer >= 21 : timer;
+        (state = level_flight_2 & timer >= 7) : 0;
+        state = level_flight_2 & timer < 7 : timer + 1;
+        state = level_flight_2 & timer >= 7 : timer;
+        (state = secondary_descent & timer >= 1) : 0;
+        state = secondary_descent & timer < 1 : timer + 1;
+        state = secondary_descent & timer >= 1 : timer;
+        (state = level_flight_3 & timer >= 8) : 0;
+        state = level_flight_3 & timer < 8 : timer + 1;
+        state = level_flight_3 & timer >= 8 : timer;
+        (state = landing_approach & timer >= 1) : 0;
+        state = landing_approach & timer < 1 : timer + 1;
+        state = landing_approach & timer >= 1 : timer;
+        TRUE : timer;
+    esac;
+
+---------------------------------------------------------
+-- MODULE: oper
+---------------------------------------------------------
+MODULE oper
+VAR
+    state : {idle, off};
+    timer : 0..1;
+    out_evstart_value : boolean;
+    out_evstart_valid : boolean;
+DEFINE
+    out_evstart := case
+        out_evstart_valid : out_evstart_value;
+        TRUE : FALSE;
+    esac;
+ASSIGN
+    init(state) := idle;
+    init(timer) := 0;
+    init(out_evstart_value) := FALSE;
+    init(out_evstart_valid) := FALSE;
+
+    -- ====== 状态转移逻辑 ======
+    next(state) := case
+        state = idle & timer >= 0 : off;
+        TRUE : state;
+    esac;
+
+    -- ====== 变量与行为更新逻辑 ======
+    next(out_evstart_value) := case
+        (state = idle & timer >= 0) : TRUE;
+        TRUE : out_evstart_value;
+    esac;
+    next(out_evstart_valid) := case
+        (state = idle & timer >= 0) : TRUE;
+        TRUE : FALSE;
+    esac;
+
+    -- ====== 计时器 (Timer) 逻辑 ======
+    next(timer) := case
+        (state = idle & timer >= 0) : 0;
+        state = idle & timer < 0 : timer + 1;
+        state = idle & timer >= 0 : timer;
+        TRUE : timer;
+    esac;
+
+---------------------------------------------------------
+-- MODULE: Payload
+---------------------------------------------------------
+MODULE Payload(in_evPayloadActivate_value, in_evPayloadActivate_valid, in_voltage_value, in_voltage_valid)
+VAR
+    state : {off, on, over};
+    timer : 0..1;
+    out_current : 0..1;
+DEFINE
+    in_evPayloadActivate := case
+        in_evPayloadActivate_valid : in_evPayloadActivate_value;
+        TRUE : FALSE;
+    esac;
+    in_voltage := in_voltage_value;
+ASSIGN
+    init(state) := off;
+    init(timer) := 0;
+    init(out_current) := 0;
+
+    -- ====== 状态转移逻辑 ======
+    next(state) := case
+        state = off & in_evPayloadActivate_valid = TRUE : on;
+        state = on & timer >= 1 : over;
+        TRUE : state;
+    esac;
+
+    -- ====== 变量与行为更新逻辑 ======
+    next(out_current) := case
+        (state = off & in_evPayloadActivate_valid = TRUE) : 1;
+        (state = on & timer >= 1) : 0;
+        TRUE : out_current;
+    esac;
+
+    -- ====== 计时器 (Timer) 逻辑 ======
+    next(timer) := case
+        (state = off & in_evPayloadActivate_valid = TRUE) : 0;
+        (state = on & timer >= 1) : 0;
+        state = on & timer < 1 : timer + 1;
+        state = on & timer >= 1 : timer;
+        TRUE : timer;
+    esac;
+
+---------------------------------------------------------
+-- MODULE: Radar
+---------------------------------------------------------
+MODULE Radar(in_evSensorPreparation_value, in_evSensorPreparation_valid, in_evHighPowerOn_value, in_evHighPowerOn_valid, in_voltage_value, in_voltage_valid)
+VAR
+    state : {off, pre_heat, high_power_on};
+    timer : 0..1;
+    out_current : 0..3;
+DEFINE
+    in_evSensorPreparation := case
+        in_evSensorPreparation_valid : in_evSensorPreparation_value;
+        TRUE : FALSE;
+    esac;
+    in_evHighPowerOn := case
+        in_evHighPowerOn_valid : in_evHighPowerOn_value;
+        TRUE : FALSE;
+    esac;
+    in_voltage := in_voltage_value;
+ASSIGN
+    init(state) := off;
+    init(timer) := 0;
+    init(out_current) := 0;
+
+    -- ====== 状态转移逻辑 ======
+    next(state) := case
+        state = off & in_evSensorPreparation_valid = TRUE : pre_heat;
+        state = pre_heat & in_evHighPowerOn_valid = TRUE : high_power_on;
+        TRUE : state;
+    esac;
+
+    -- ====== 变量与行为更新逻辑 ======
+    next(out_current) := case
+        (state = off & in_evSensorPreparation_valid = TRUE) : 1;
+        (state = pre_heat & in_evHighPowerOn_valid = TRUE) : 3;
+        TRUE : out_current;
+    esac;
+
+    -- ====== 计时器 (Timer) 逻辑 ======
+    next(timer) := case
+        (state = off & in_evSensorPreparation_valid = TRUE) : 0;
+        (state = pre_heat & in_evHighPowerOn_valid = TRUE) : 0;
+        TRUE : timer;
+    esac;
+
+---------------------------------------------------------
+-- 主模块：耦合系统 (UAV_System)
+---------------------------------------------------------
+MODULE main
+VAR
+    FC : FlightMissionControl(OP.out_evstart_value, OP.out_evstart_valid);
+    CBM : ControlBusModule(FC.out_evInstruct_value, FC.out_evInstruct_valid);
+    BAT : Battery(OP.out_evstart_value, OP.out_evstart_valid);
+    PL : Payload(CBM.out_evPayloadActivate_value, CBM.out_evPayloadActivate_valid, BAT.out_voltage_value, BAT.out_voltage_valid);
+    RADAR : Radar(CBM.out_evSensorPreparation_value, CBM.out_evSensorPreparation_valid, CBM.out_evHighPowerOn_value, CBM.out_evHighPowerOn_valid, BAT.out_voltage_value, BAT.out_voltage_valid);
+    AP : AutoPilot(CBM.out_evActuatorEngage_value, CBM.out_evActuatorEngage_valid, CBM.out_evFlightMode1_value, CBM.out_evFlightMode1_valid, CBM.out_evFlightMode2_value, CBM.out_evFlightMode2_valid, CBM.out_evFlightMode3_value, CBM.out_evFlightMode3_valid, BAT.out_voltage_value, BAT.out_voltage_valid);
+    OP : oper;
+LTLSPEC G ((BAT.state = discharge) -> (BAT.out_voltage = 3));
+LTLSPEC G ((RADAR.state = pre_heat) -> (RADAR.out_current = 1));
+LTLSPEC G ((RADAR.state = high_power_on) -> (RADAR.out_current = 3));
+LTLSPEC G ((PL.state = on) -> (PL.out_current = 1));
+LTLSPEC G ((PL.state = over) -> (PL.out_current = 0));
+LTLSPEC G ((CBM.in_evInstruct = 1) -> F (CBM.out_evSensorPreparation = TRUE));
+LTLSPEC G ((CBM.in_evInstruct = 1) -> F (CBM.out_evActuatorEngage = TRUE));
+LTLSPEC G ((CBM.in_evInstruct = 2) -> F (CBM.out_evPayloadActivate = TRUE));
+LTLSPEC G ((CBM.in_evInstruct = 3) -> F (CBM.out_evHighPowerOn = TRUE));
+LTLSPEC G ((CBM.in_evInstruct = 3) -> F (CBM.out_evFlightMode1 = TRUE));
+LTLSPEC G ((CBM.in_evInstruct = 4) -> F (CBM.out_evFlightMode2 = TRUE));
+LTLSPEC G ((CBM.in_evInstruct = 6) -> F (CBM.out_evFlightMode3 = TRUE));
+LTLSPEC G (((FC.state = idle) & (FC.in_evstart = TRUE)) -> F (FC.state = takeoff_climb0));
+SPEC AG (((AP.state = off) & (AP.in_evActuatorEngage = TRUE)) -> AX (AP.state = on));
+SPEC AG (((AP.state = on) & (AP.in_evFlightMode1 = TRUE)) -> AX (AP.out_current = 18));
+LTLSPEC G (((PL.state = off) & (PL.in_evPayloadActivate = TRUE)) -> F (PL.state = on));
+LTLSPEC G ((PL.state = on) -> F (PL.state = over));
+LTLSPEC G ((FC.state = engine_pre_ignition) -> F (FC.state = motor_ignition));
+LTLSPEC G ((FC.state = motor_ignition) -> F (FC.state = cruise_turn));
+LTLSPEC G ((FC.state = cruise_turn) -> F (FC.state = descent));
+LTLSPEC G ((FC.state = descent) -> F (FC.state = level_flight_2));
+LTLSPEC G ((FC.state = descent) -> F (FC.out_evInstruct = 3));
+LTLSPEC G ((RADAR.in_evHighPowerOn = TRUE) -> F (RADAR.state = high_power_on));
+LTLSPEC G ((AP.in_evFlightMode1 = TRUE) -> F (AP.state = transition1));
+LTLSPEC G ((FC.state = level_flight_2) -> F (FC.state = secondary_descent));
+LTLSPEC G ((FC.state = level_flight_2) -> F (FC.out_evInstruct = 4));
+LTLSPEC G ((AP.in_evFlightMode2 = TRUE) -> F (AP.state = transition1));
+LTLSPEC G ((FC.state = secondary_descent) -> F (FC.state = level_flight_3));
+LTLSPEC G ((FC.state = secondary_descent) -> F (FC.out_evInstruct = 5));
+LTLSPEC G ((FC.state = level_flight_3) -> F (FC.state = landing_approach));
+LTLSPEC G ((FC.state = level_flight_3) -> F (FC.out_evInstruct = 6));
+LTLSPEC G ((AP.in_evFlightMode3 = TRUE) -> F (AP.state = transition1));
+LTLSPEC G ((FC.state = landing_approach) -> F (FC.state = finish));
+LTLSPEC G ((AP.state = transition1) -> F (AP.state = on));
+LTLSPEC G ((FC.state = idle) -> ((FC.state = idle) U (FC.in_evstart = TRUE)));
+LTLSPEC G ((BAT.state = idle) -> ((BAT.state = idle) U (BAT.in_evstart = TRUE)));
+LTLSPEC G ((RADAR.state = off) -> ((RADAR.state = off) U (RADAR.in_evSensorPreparation = TRUE)));
+LTLSPEC G ((RADAR.state = pre_heat) -> ((RADAR.state = pre_heat) U (RADAR.in_evHighPowerOn = TRUE)));
+LTLSPEC G ((AP.state = off) -> ((AP.state = off) U (AP.in_evActuatorEngage = TRUE)));
+LTLSPEC G ((PL.state = off) -> ((PL.state = off) U (PL.in_evPayloadActivate = TRUE)));
+LTLSPEC G ((PL.state = on) -> ((PL.state = on) U (PL.state = over)));
+LTLSPEC G (!((FC.state = idle) & (FC.state = finish)));
+LTLSPEC G (!((BAT.state = idle) & (BAT.state = discharge)));
+LTLSPEC G (!((RADAR.state = off) & (RADAR.state = high_power_on)));
+LTLSPEC G (!((AP.state = off) & (AP.out_current = 18)));
+LTLSPEC G (!((PL.state = on) & (PL.state = over)));
+LTLSPEC F (FC.state = finish);
+LTLSPEC F (BAT.state = discharge);
+LTLSPEC F (RADAR.state = high_power_on);
+LTLSPEC F (PL.state = over);
+LTLSPEC F (AP.state = on);
+
+-- 触发可达性检查（不计入正式规约总数）
+CTLSPEC NAME COV_REQ_FMCS_CONS_01 := EF (BAT.state = discharge);
+CTLSPEC NAME COV_REQ_FMCS_CONS_02 := EF (RADAR.state = pre_heat);
+CTLSPEC NAME COV_REQ_FMCS_CONS_03 := EF (RADAR.state = high_power_on);
+CTLSPEC NAME COV_REQ_FMCS_CONS_04 := EF (PL.state = on);
+CTLSPEC NAME COV_REQ_FMCS_CONS_05 := EF (PL.state = over);
+CTLSPEC NAME COV_REQ_FMCS_CONS_06 := EF (CBM.in_evInstruct = 1);
+CTLSPEC NAME COV_REQ_FMCS_CONS_07 := EF (CBM.in_evInstruct = 1);
+CTLSPEC NAME COV_REQ_FMCS_CONS_08 := EF (CBM.in_evInstruct = 2);
+CTLSPEC NAME COV_REQ_FMCS_CONS_09 := EF (CBM.in_evInstruct = 3);
+CTLSPEC NAME COV_REQ_FMCS_CONS_10 := EF (CBM.in_evInstruct = 3);
+CTLSPEC NAME COV_REQ_FMCS_CONS_11 := EF (CBM.in_evInstruct = 4);
+CTLSPEC NAME COV_REQ_FMCS_CONS_12 := EF (CBM.in_evInstruct = 6);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_13 := EF ((FC.state = idle) & (FC.in_evstart = TRUE));
+CTLSPEC NAME COV_REQ_FMCS_FLOW_14 := EF ((AP.state = off) & (AP.in_evActuatorEngage = TRUE));
+CTLSPEC NAME COV_REQ_FMCS_FLOW_15 := EF ((AP.state = on) & (AP.in_evFlightMode1 = TRUE));
+CTLSPEC NAME COV_REQ_FMCS_FLOW_16 := EF ((PL.state = off) & (PL.in_evPayloadActivate = TRUE));
+CTLSPEC NAME COV_REQ_FMCS_FLOW_17 := EF (PL.state = on);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_18 := EF (FC.state = engine_pre_ignition);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_19 := EF (FC.state = motor_ignition);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_20 := EF (FC.state = cruise_turn);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_21 := EF (FC.state = descent);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_22 := EF (FC.state = descent);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_23 := EF (RADAR.in_evHighPowerOn = TRUE);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_24 := EF (AP.in_evFlightMode1 = TRUE);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_25 := EF (FC.state = level_flight_2);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_26 := EF (FC.state = level_flight_2);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_27 := EF (AP.in_evFlightMode2 = TRUE);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_28 := EF (FC.state = secondary_descent);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_29 := EF (FC.state = secondary_descent);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_30 := EF (FC.state = level_flight_3);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_31 := EF (FC.state = level_flight_3);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_32 := EF (AP.in_evFlightMode3 = TRUE);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_33 := EF (FC.state = landing_approach);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_34 := EF (AP.state = transition1);
+CTLSPEC NAME COV_REQ_FMCS_HOLD_35 := EF (FC.state = idle);
+CTLSPEC NAME COV_REQ_FMCS_HOLD_36 := EF (BAT.state = idle);
+CTLSPEC NAME COV_REQ_FMCS_HOLD_37 := EF (RADAR.state = off);
+CTLSPEC NAME COV_REQ_FMCS_HOLD_38 := EF (RADAR.state = pre_heat);
+CTLSPEC NAME COV_REQ_FMCS_HOLD_39 := EF (AP.state = off);
+CTLSPEC NAME COV_REQ_FMCS_HOLD_40 := EF (PL.state = off);
+CTLSPEC NAME COV_REQ_FMCS_HOLD_41 := EF (PL.state = on);

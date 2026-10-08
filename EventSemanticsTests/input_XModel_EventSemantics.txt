@@ -1,0 +1,62 @@
+couple EventSemanticsTestSystem
+import Lo.SingleEventSender as SingleEventSender;
+import Lo.EventConsumptionReceiver as EventConsumptionReceiver;
+part:
+  SingleEventSender SENDER();
+  EventConsumptionReceiver RECEIVER();
+connection:
+  connect(SENDER.evPulse,RECEIVER.evPulse);
+end;
+
+
+discrete SingleEventSender
+port:
+  event output bool evPulse;
+state:
+  initial state ready
+    when entry() then
+      statehold(0);
+    end;
+    when timeover() then
+      transition(done);
+      out
+        send(evPulse,true);
+    end;
+  end;
+
+  state done
+    when entry() then
+      statehold(infinite);
+    end;
+  end;
+end;
+
+
+discrete EventConsumptionReceiver
+port:
+  event input bool evPulse;
+state:
+  initial state waiting
+    when entry() then
+      statehold(infinite);
+    end;
+    when receive(evPulse) then
+      transition(received);
+    end;
+  end;
+
+  state received
+    when entry() then
+      statehold(infinite);
+    end;
+    when receive(evPulse) then
+      transition(repeated);
+    end;
+  end;
+
+  state repeated
+    when entry() then
+      statehold(infinite);
+    end;
+  end;
+end;

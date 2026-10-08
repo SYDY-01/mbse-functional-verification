@@ -1,0 +1,491 @@
+-- ==================================================================
+-- 由结构化CNL需求自动生成的nuXmv规约
+-- 需求文件：FMCS_Req_Final.md
+-- 追溯文件：FMCS_Req_TC_validated.txt
+-- X模型文件：input_XModel_FMCS.txt
+-- 通过模型约束校验的追踪映射：70
+-- 仅做兼容性语法检查的time_source：10（不参与本文模板绑定）
+-- 实际需求槽位绑定：101
+-- 规约总数：51（CTL=2, LTL=49）
+-- 触发可达性检查：41（不计入正式规约总数）
+-- 诊断警告：4
+-- ==================================================================
+
+-- [REQ-FMCS-CONS-01] 当前状态一致性 / LTL
+-- 原始需求：当【供电系统】处于【稳定供电状态】时，【供电系统】应输出【任务所需的工作电压】
+LTLSPEC G ((BAT.state = discharge) -> (BAT.out_voltage = 3));
+
+-- [REQ-FMCS-CONS-02] 当前状态一致性 / LTL
+-- 原始需求：当【雷达】处于【预热阶段】时，【雷达】应输出【低功率电流】
+LTLSPEC G ((RADAR.state = pre_heat) -> (RADAR.out_current = 1));
+
+-- [REQ-FMCS-CONS-03] 当前状态一致性 / LTL
+-- 原始需求：当【雷达】处于【高功率工作阶段】时，【雷达】应输出【高功率电流】
+LTLSPEC G ((RADAR.state = high_power_on) -> (RADAR.out_current = 3));
+
+-- [REQ-FMCS-CONS-04] 当前状态一致性 / LTL
+-- 原始需求：当【载荷】处于【工作阶段】时，【载荷】应输出【工作电流输出】
+LTLSPEC G ((PL.state = on) -> (PL.out_current = 1));
+
+-- [REQ-FMCS-CONS-05] 当前状态一致性 / LTL
+-- 原始需求：当【载荷】处于【结束状态】时，【载荷】应输出【零】
+LTLSPEC G ((PL.state = over) -> (PL.out_current = 0));
+
+-- [REQ-FMCS-CONS-06] 最终响应 / LTL
+-- 原始需求：当【控制总线】收到【起飞准备指令】时，【控制总线】最终一定会发送【传感器准备信号】
+LTLSPEC G ((CBM.in_evInstruct = 1) -> F (CBM.out_evSensorPreparation = TRUE));
+
+-- [REQ-FMCS-CONS-07] 最终响应 / LTL
+-- 原始需求：当【控制总线】收到【起飞准备指令】时，【控制总线】最终一定会发送【执行机构接入信号】
+LTLSPEC G ((CBM.in_evInstruct = 1) -> F (CBM.out_evActuatorEngage = TRUE));
+
+-- [REQ-FMCS-CONS-08] 最终响应 / LTL
+-- 原始需求：当【控制总线】收到【载荷启动指令】时，【控制总线】最终一定会发送【载荷激活信号】
+LTLSPEC G ((CBM.in_evInstruct = 2) -> F (CBM.out_evPayloadActivate = TRUE));
+
+-- [REQ-FMCS-FLOW-09] 最终响应 / LTL
+-- 原始需求：当【控制总线】收到【雷达高功率和第一飞行模式指令】时，【控制总线】最终一定会发送【雷达高功率开启信号】
+LTLSPEC G ((CBM.in_evInstruct = 3) -> F (CBM.out_evHighPowerOn = TRUE));
+
+-- [REQ-FMCS-CONS-10] 最终响应 / LTL
+-- 原始需求：当【控制总线】收到【雷达高功率和第一飞行模式指令】时，【控制总线】最终一定会发送【第一飞行模式信号】
+LTLSPEC G ((CBM.in_evInstruct = 3) -> F (CBM.out_evFlightMode1 = TRUE));
+
+-- [REQ-FMCS-CONS-11] 最终响应 / LTL
+-- 原始需求：当【控制总线】收到【第二飞行模式指令】时，【控制总线】最终一定会发送【第二飞行模式信号】
+LTLSPEC G ((CBM.in_evInstruct = 4) -> F (CBM.out_evFlightMode2 = TRUE));
+
+-- [REQ-FMCS-CONS-12] 最终响应 / LTL
+-- 原始需求：当【控制总线】收到【第三飞行模式指令】时，【控制总线】最终一定会发送【第三飞行模式信号】
+LTLSPEC G ((CBM.in_evInstruct = 6) -> F (CBM.out_evFlightMode3 = TRUE));
+
+-- [REQ-FMCS-FLOW-13] 无界最终响应 / LTL
+-- 原始需求：当【飞行任务控制系统】处于【待机状态】且【飞行任务控制系统】收到【系统启动命令】后，【飞行任务控制系统】应进入【起飞爬升准备阶段】
+LTLSPEC G (((FC.state = idle) & (FC.in_evstart = TRUE)) -> F (FC.state = takeoff_climb0));
+
+-- [REQ-FMCS-FLOW-14] 固定步响应 / CTL
+-- 原始需求：当【自动驾驶仪】处于【关闭状态】且【自动驾驶仪】收到【执行机构接入信号】后，【自动驾驶仪】一定在【1】步后【进入可工作状态】
+SPEC AG (((AP.state = off) & (AP.in_evActuatorEngage = TRUE)) -> AX (AP.state = on));
+
+-- [REQ-FMCS-FLOW-15] 固定步响应 / CTL
+-- 原始需求：当【自动驾驶仪】处于【可工作状态】且【自动驾驶仪】收到【第一飞行模式信号】后，【自动驾驶仪】一定在【1】步后【输出高负载工作状态】
+SPEC AG (((AP.state = on) & (AP.in_evFlightMode1 = TRUE)) -> AX (AP.out_current = 18));
+
+-- [REQ-FMCS-FLOW-16] 无界最终响应 / LTL
+-- 原始需求：当【载荷】处于【关闭状态】且【载荷】收到【载荷激活信号】后，【载荷】应进入【工作阶段】
+LTLSPEC G (((PL.state = off) & (PL.in_evPayloadActivate = TRUE)) -> F (PL.state = on));
+
+-- [REQ-FMCS-FLOW-17] 无界最终响应 / LTL
+-- 原始需求：当【载荷】处于【工作阶段】后，【载荷】应进入【结束状态】
+LTLSPEC G ((PL.state = on) -> F (PL.state = over));
+
+-- [REQ-FMCS-FLOW-18] 无界最终响应 / LTL
+-- 原始需求：当【飞行任务控制系统】处于【发动机预点火阶段】后，【飞行任务控制系统】应进入【电机点火阶段】
+LTLSPEC G ((FC.state = engine_pre_ignition) -> F (FC.state = motor_ignition));
+
+-- [REQ-FMCS-FLOW-19] 无界最终响应 / LTL
+-- 原始需求：当【飞行任务控制系统】处于【电机点火阶段】后，【飞行任务控制系统】应进入【巡航转弯阶段】
+LTLSPEC G ((FC.state = motor_ignition) -> F (FC.state = cruise_turn));
+
+-- [REQ-FMCS-FLOW-20] 无界最终响应 / LTL
+-- 原始需求：当【飞行任务控制系统】处于【巡航转弯阶段】后，【飞行任务控制系统】应进入【下降阶段】
+LTLSPEC G ((FC.state = cruise_turn) -> F (FC.state = descent));
+
+-- [REQ-FMCS-FLOW-21] 无界最终响应 / LTL
+-- 原始需求：当【飞行任务控制系统】处于【下降阶段】后，【飞行任务控制系统】应进入【第二平飞阶段】
+LTLSPEC G ((FC.state = descent) -> F (FC.state = level_flight_2));
+
+-- [REQ-FMCS-FLOW-22] 无界最终响应 / LTL
+-- 原始需求：当【飞行任务控制系统】处于【下降阶段】后，【飞行任务控制系统】应发出【雷达高功率和第一飞行模式指令】
+LTLSPEC G ((FC.state = descent) -> F (FC.out_evInstruct = 3));
+
+-- [REQ-FMCS-FLOW-23] 无界最终响应 / LTL
+-- 原始需求：当【雷达】收到【高功率开启信号】后，【雷达】应进入【高功率工作阶段】
+LTLSPEC G ((RADAR.in_evHighPowerOn = TRUE) -> F (RADAR.state = high_power_on));
+
+-- [REQ-FMCS-FLOW-24] 无界最终响应 / LTL
+-- 原始需求：当【自动驾驶仪】收到【第一飞行模式信号】后，【自动驾驶仪】应进入【模式切换过渡阶段】
+LTLSPEC G ((AP.in_evFlightMode1 = TRUE) -> F (AP.state = transition1));
+
+-- [REQ-FMCS-FLOW-25] 无界最终响应 / LTL
+-- 原始需求：当【飞行任务控制系统】处于【第二平飞阶段】后，【飞行任务控制系统】应进入【二次下降阶段】
+LTLSPEC G ((FC.state = level_flight_2) -> F (FC.state = secondary_descent));
+
+-- [REQ-FMCS-FLOW-26] 无界最终响应 / LTL
+-- 原始需求：当【飞行任务控制系统】处于【第二平飞阶段】后，【飞行任务控制系统】应发出【第二飞行模式指令】
+LTLSPEC G ((FC.state = level_flight_2) -> F (FC.out_evInstruct = 4));
+
+-- [REQ-FMCS-FLOW-27] 无界最终响应 / LTL
+-- 原始需求：当【自动驾驶仪】收到【第二飞行模式信号】后，【自动驾驶仪】应进入【模式切换过渡阶段】
+LTLSPEC G ((AP.in_evFlightMode2 = TRUE) -> F (AP.state = transition1));
+
+-- [REQ-FMCS-FLOW-28] 无界最终响应 / LTL
+-- 原始需求：当【飞行任务控制系统】处于【二次下降阶段】后，【飞行任务控制系统】应进入【第三平飞阶段】
+LTLSPEC G ((FC.state = secondary_descent) -> F (FC.state = level_flight_3));
+
+-- [REQ-FMCS-FLOW-29] 无界最终响应 / LTL
+-- 原始需求：当【飞行任务控制系统】处于【二次下降阶段】后，【飞行任务控制系统】应发出【单发第一飞行模式指令】
+LTLSPEC G ((FC.state = secondary_descent) -> F (FC.out_evInstruct = 5));
+
+-- [REQ-FMCS-FLOW-30] 无界最终响应 / LTL
+-- 原始需求：当【飞行任务控制系统】处于【第三平飞阶段】后，【飞行任务控制系统】应进入【着陆进近阶段】
+LTLSPEC G ((FC.state = level_flight_3) -> F (FC.state = landing_approach));
+
+-- [REQ-FMCS-FLOW-31] 无界最终响应 / LTL
+-- 原始需求：当【飞行任务控制系统】处于【第三平飞阶段】后，【飞行任务控制系统】应发出【第三飞行模式指令】
+LTLSPEC G ((FC.state = level_flight_3) -> F (FC.out_evInstruct = 6));
+
+-- [REQ-FMCS-FLOW-32] 无界最终响应 / LTL
+-- 原始需求：当【自动驾驶仪】收到【第三飞行模式信号】后，【自动驾驶仪】应进入【模式切换过渡阶段】
+LTLSPEC G ((AP.in_evFlightMode3 = TRUE) -> F (AP.state = transition1));
+
+-- [REQ-FMCS-FLOW-33] 无界最终响应 / LTL
+-- 原始需求：当【飞行任务控制系统】处于【着陆进近阶段】后，【飞行任务控制系统】应进入【任务完成状态】
+LTLSPEC G ((FC.state = landing_approach) -> F (FC.state = finish));
+
+-- [REQ-FMCS-FLOW-34] 无界最终响应 / LTL
+-- 原始需求：当【自动驾驶仪】处于【模式切换过渡阶段】后，【自动驾驶仪】应进入【可工作状态】
+LTLSPEC G ((AP.state = transition1) -> F (AP.state = on));
+
+-- [REQ-FMCS-HOLD-35] 状态持续（强直到） / LTL
+-- 原始需求：【飞行任务控制系统】处于【待机状态】，直到【飞行任务控制系统】收到【系统启动命令】
+LTLSPEC G ((FC.state = idle) -> ((FC.state = idle) U (FC.in_evstart = TRUE)));
+
+-- [REQ-FMCS-HOLD-36] 状态持续（强直到） / LTL
+-- 原始需求：【供电系统】处于【未启动状态】，直到【供电系统】收到【系统启动命令】
+LTLSPEC G ((BAT.state = idle) -> ((BAT.state = idle) U (BAT.in_evstart = TRUE)));
+
+-- [REQ-FMCS-HOLD-37] 状态持续（强直到） / LTL
+-- 原始需求：【雷达】处于【关闭状态】，直到【雷达】收到【传感器准备信号】
+LTLSPEC G ((RADAR.state = off) -> ((RADAR.state = off) U (RADAR.in_evSensorPreparation = TRUE)));
+
+-- [REQ-FMCS-HOLD-38] 状态持续（强直到） / LTL
+-- 原始需求：【雷达】处于【预热阶段】，直到【雷达】收到【高功率开启信号】
+LTLSPEC G ((RADAR.state = pre_heat) -> ((RADAR.state = pre_heat) U (RADAR.in_evHighPowerOn = TRUE)));
+
+-- [REQ-FMCS-HOLD-39] 状态持续（强直到） / LTL
+-- 原始需求：【自动驾驶仪】处于【关闭状态】，直到【自动驾驶仪】收到【执行机构接入信号】
+LTLSPEC G ((AP.state = off) -> ((AP.state = off) U (AP.in_evActuatorEngage = TRUE)));
+
+-- [REQ-FMCS-HOLD-40] 状态持续（强直到） / LTL
+-- 原始需求：【载荷】处于【关闭状态】，直到【载荷】收到【载荷激活信号】
+LTLSPEC G ((PL.state = off) -> ((PL.state = off) U (PL.in_evPayloadActivate = TRUE)));
+
+-- [REQ-FMCS-HOLD-41] 状态持续（强直到） / LTL
+-- 原始需求：【载荷】处于【工作阶段】，直到【载荷】进入【结束状态】
+LTLSPEC G ((PL.state = on) -> ((PL.state = on) U (PL.state = over)));
+
+-- [REQ-FMCS-SAFE-42] 互斥约束 / LTL
+-- 原始需求：【飞行任务控制系统】不会同时处于【待机状态】和【任务完成状态】
+-- WARNING: 两个互斥命题是同一枚举变量的不同取值，该规约在单值变量语义下恒真，不能作为有效缺陷检测规约。
+LTLSPEC G (!((FC.state = idle) & (FC.state = finish)));
+
+-- [REQ-FMCS-SAFE-43] 互斥约束 / LTL
+-- 原始需求：【供电系统】不会同时处于【未启动状态】和【稳定供电状态】
+-- WARNING: 两个互斥命题是同一枚举变量的不同取值，该规约在单值变量语义下恒真，不能作为有效缺陷检测规约。
+LTLSPEC G (!((BAT.state = idle) & (BAT.state = discharge)));
+
+-- [REQ-FMCS-SAFE-44] 互斥约束 / LTL
+-- 原始需求：【雷达】不会同时处于【关闭状态】和【高功率工作阶段】
+-- WARNING: 两个互斥命题是同一枚举变量的不同取值，该规约在单值变量语义下恒真，不能作为有效缺陷检测规约。
+LTLSPEC G (!((RADAR.state = off) & (RADAR.state = high_power_on)));
+
+-- [REQ-FMCS-SAFE-45] 互斥约束 / LTL
+-- 原始需求：【自动驾驶仪】不会同时处于【关闭状态】和【高负载工作状态】
+LTLSPEC G (!((AP.state = off) & (AP.out_current = 18)));
+
+-- [REQ-FMCS-SAFE-46] 互斥约束 / LTL
+-- 原始需求：【载荷】不会同时处于【工作阶段】和【结束状态】
+-- WARNING: 两个互斥命题是同一枚举变量的不同取值，该规约在单值变量语义下恒真，不能作为有效缺陷检测规约。
+LTLSPEC G (!((PL.state = on) & (PL.state = over)));
+
+-- [REQ-FMCS-LIVE-47] 最终可达性 / LTL
+-- 原始需求：【飞行任务控制系统】一定会达到【任务完成状态】
+LTLSPEC F (FC.state = finish);
+
+-- [REQ-FMCS-LIVE-48] 最终可达性 / LTL
+-- 原始需求：【供电系统】一定会达到【稳定供电状态】
+LTLSPEC F (BAT.state = discharge);
+
+-- [REQ-FMCS-LIVE-49] 最终可达性 / LTL
+-- 原始需求：【雷达】一定会达到【高功率工作阶段】
+LTLSPEC F (RADAR.state = high_power_on);
+
+-- [REQ-FMCS-LIVE-50] 最终可达性 / LTL
+-- 原始需求：【载荷】一定会达到【结束状态】
+LTLSPEC F (PL.state = over);
+
+-- [REQ-FMCS-LIVE-51] 最终可达性 / LTL
+-- 原始需求：【自动驾驶仪】一定会达到【可工作状态】
+LTLSPEC F (AP.state = on);
+
+-- ==================================================================
+-- 触发可达性检查（仅用于空触发预警，不计入正式需求规约）
+-- ==================================================================
+
+-- [TRIGGER-COVERAGE REQ-FMCS-CONS-01] 当前状态一致性
+-- 触发条件：BAT.state = discharge
+CTLSPEC NAME COV_REQ_FMCS_CONS_01 := EF (BAT.state = discharge);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-CONS-02] 当前状态一致性
+-- 触发条件：RADAR.state = pre_heat
+CTLSPEC NAME COV_REQ_FMCS_CONS_02 := EF (RADAR.state = pre_heat);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-CONS-03] 当前状态一致性
+-- 触发条件：RADAR.state = high_power_on
+CTLSPEC NAME COV_REQ_FMCS_CONS_03 := EF (RADAR.state = high_power_on);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-CONS-04] 当前状态一致性
+-- 触发条件：PL.state = on
+CTLSPEC NAME COV_REQ_FMCS_CONS_04 := EF (PL.state = on);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-CONS-05] 当前状态一致性
+-- 触发条件：PL.state = over
+CTLSPEC NAME COV_REQ_FMCS_CONS_05 := EF (PL.state = over);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-CONS-06] 最终响应
+-- 触发条件：CBM.in_evInstruct = 1
+CTLSPEC NAME COV_REQ_FMCS_CONS_06 := EF (CBM.in_evInstruct = 1);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-CONS-07] 最终响应
+-- 触发条件：CBM.in_evInstruct = 1
+CTLSPEC NAME COV_REQ_FMCS_CONS_07 := EF (CBM.in_evInstruct = 1);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-CONS-08] 最终响应
+-- 触发条件：CBM.in_evInstruct = 2
+CTLSPEC NAME COV_REQ_FMCS_CONS_08 := EF (CBM.in_evInstruct = 2);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-09] 最终响应
+-- 触发条件：CBM.in_evInstruct = 3
+CTLSPEC NAME COV_REQ_FMCS_CONS_09 := EF (CBM.in_evInstruct = 3);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-CONS-10] 最终响应
+-- 触发条件：CBM.in_evInstruct = 3
+CTLSPEC NAME COV_REQ_FMCS_CONS_10 := EF (CBM.in_evInstruct = 3);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-CONS-11] 最终响应
+-- 触发条件：CBM.in_evInstruct = 4
+CTLSPEC NAME COV_REQ_FMCS_CONS_11 := EF (CBM.in_evInstruct = 4);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-CONS-12] 最终响应
+-- 触发条件：CBM.in_evInstruct = 6
+CTLSPEC NAME COV_REQ_FMCS_CONS_12 := EF (CBM.in_evInstruct = 6);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-13] 无界最终响应
+-- 触发条件：(FC.state = idle) & (FC.in_evstart = TRUE)
+CTLSPEC NAME COV_REQ_FMCS_FLOW_13 := EF ((FC.state = idle) & (FC.in_evstart = TRUE));
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-14] 固定步响应
+-- 触发条件：(AP.state = off) & (AP.in_evActuatorEngage = TRUE)
+CTLSPEC NAME COV_REQ_FMCS_FLOW_14 := EF ((AP.state = off) & (AP.in_evActuatorEngage = TRUE));
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-15] 固定步响应
+-- 触发条件：(AP.state = on) & (AP.in_evFlightMode1 = TRUE)
+CTLSPEC NAME COV_REQ_FMCS_FLOW_15 := EF ((AP.state = on) & (AP.in_evFlightMode1 = TRUE));
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-16] 无界最终响应
+-- 触发条件：(PL.state = off) & (PL.in_evPayloadActivate = TRUE)
+CTLSPEC NAME COV_REQ_FMCS_FLOW_16 := EF ((PL.state = off) & (PL.in_evPayloadActivate = TRUE));
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-17] 无界最终响应
+-- 触发条件：PL.state = on
+CTLSPEC NAME COV_REQ_FMCS_FLOW_17 := EF (PL.state = on);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-18] 无界最终响应
+-- 触发条件：FC.state = engine_pre_ignition
+CTLSPEC NAME COV_REQ_FMCS_FLOW_18 := EF (FC.state = engine_pre_ignition);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-19] 无界最终响应
+-- 触发条件：FC.state = motor_ignition
+CTLSPEC NAME COV_REQ_FMCS_FLOW_19 := EF (FC.state = motor_ignition);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-20] 无界最终响应
+-- 触发条件：FC.state = cruise_turn
+CTLSPEC NAME COV_REQ_FMCS_FLOW_20 := EF (FC.state = cruise_turn);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-21] 无界最终响应
+-- 触发条件：FC.state = descent
+CTLSPEC NAME COV_REQ_FMCS_FLOW_21 := EF (FC.state = descent);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-22] 无界最终响应
+-- 触发条件：FC.state = descent
+CTLSPEC NAME COV_REQ_FMCS_FLOW_22 := EF (FC.state = descent);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-23] 无界最终响应
+-- 触发条件：RADAR.in_evHighPowerOn = TRUE
+CTLSPEC NAME COV_REQ_FMCS_FLOW_23 := EF (RADAR.in_evHighPowerOn = TRUE);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-24] 无界最终响应
+-- 触发条件：AP.in_evFlightMode1 = TRUE
+CTLSPEC NAME COV_REQ_FMCS_FLOW_24 := EF (AP.in_evFlightMode1 = TRUE);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-25] 无界最终响应
+-- 触发条件：FC.state = level_flight_2
+CTLSPEC NAME COV_REQ_FMCS_FLOW_25 := EF (FC.state = level_flight_2);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-26] 无界最终响应
+-- 触发条件：FC.state = level_flight_2
+CTLSPEC NAME COV_REQ_FMCS_FLOW_26 := EF (FC.state = level_flight_2);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-27] 无界最终响应
+-- 触发条件：AP.in_evFlightMode2 = TRUE
+CTLSPEC NAME COV_REQ_FMCS_FLOW_27 := EF (AP.in_evFlightMode2 = TRUE);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-28] 无界最终响应
+-- 触发条件：FC.state = secondary_descent
+CTLSPEC NAME COV_REQ_FMCS_FLOW_28 := EF (FC.state = secondary_descent);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-29] 无界最终响应
+-- 触发条件：FC.state = secondary_descent
+CTLSPEC NAME COV_REQ_FMCS_FLOW_29 := EF (FC.state = secondary_descent);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-30] 无界最终响应
+-- 触发条件：FC.state = level_flight_3
+CTLSPEC NAME COV_REQ_FMCS_FLOW_30 := EF (FC.state = level_flight_3);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-31] 无界最终响应
+-- 触发条件：FC.state = level_flight_3
+CTLSPEC NAME COV_REQ_FMCS_FLOW_31 := EF (FC.state = level_flight_3);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-32] 无界最终响应
+-- 触发条件：AP.in_evFlightMode3 = TRUE
+CTLSPEC NAME COV_REQ_FMCS_FLOW_32 := EF (AP.in_evFlightMode3 = TRUE);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-33] 无界最终响应
+-- 触发条件：FC.state = landing_approach
+CTLSPEC NAME COV_REQ_FMCS_FLOW_33 := EF (FC.state = landing_approach);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-FLOW-34] 无界最终响应
+-- 触发条件：AP.state = transition1
+CTLSPEC NAME COV_REQ_FMCS_FLOW_34 := EF (AP.state = transition1);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-HOLD-35] 状态持续（强直到）
+-- 触发条件：FC.state = idle
+CTLSPEC NAME COV_REQ_FMCS_HOLD_35 := EF (FC.state = idle);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-HOLD-36] 状态持续（强直到）
+-- 触发条件：BAT.state = idle
+CTLSPEC NAME COV_REQ_FMCS_HOLD_36 := EF (BAT.state = idle);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-HOLD-37] 状态持续（强直到）
+-- 触发条件：RADAR.state = off
+CTLSPEC NAME COV_REQ_FMCS_HOLD_37 := EF (RADAR.state = off);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-HOLD-38] 状态持续（强直到）
+-- 触发条件：RADAR.state = pre_heat
+CTLSPEC NAME COV_REQ_FMCS_HOLD_38 := EF (RADAR.state = pre_heat);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-HOLD-39] 状态持续（强直到）
+-- 触发条件：AP.state = off
+CTLSPEC NAME COV_REQ_FMCS_HOLD_39 := EF (AP.state = off);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-HOLD-40] 状态持续（强直到）
+-- 触发条件：PL.state = off
+CTLSPEC NAME COV_REQ_FMCS_HOLD_40 := EF (PL.state = off);
+
+-- [TRIGGER-COVERAGE REQ-FMCS-HOLD-41] 状态持续（强直到）
+-- 触发条件：PL.state = on
+CTLSPEC NAME COV_REQ_FMCS_HOLD_41 := EF (PL.state = on);
+
+-- ==================================================================
+-- BEGIN: 可直接复制到nuXmv模型的完整规约与覆盖检查
+-- 注意：正式规约与覆盖检查分别统计；本区仅用于集中复制。
+-- ==================================================================
+-- 正式需求规约
+LTLSPEC G ((BAT.state = discharge) -> (BAT.out_voltage = 3));
+LTLSPEC G ((RADAR.state = pre_heat) -> (RADAR.out_current = 1));
+LTLSPEC G ((RADAR.state = high_power_on) -> (RADAR.out_current = 3));
+LTLSPEC G ((PL.state = on) -> (PL.out_current = 1));
+LTLSPEC G ((PL.state = over) -> (PL.out_current = 0));
+LTLSPEC G ((CBM.in_evInstruct = 1) -> F (CBM.out_evSensorPreparation = TRUE));
+LTLSPEC G ((CBM.in_evInstruct = 1) -> F (CBM.out_evActuatorEngage = TRUE));
+LTLSPEC G ((CBM.in_evInstruct = 2) -> F (CBM.out_evPayloadActivate = TRUE));
+LTLSPEC G ((CBM.in_evInstruct = 3) -> F (CBM.out_evHighPowerOn = TRUE));
+LTLSPEC G ((CBM.in_evInstruct = 3) -> F (CBM.out_evFlightMode1 = TRUE));
+LTLSPEC G ((CBM.in_evInstruct = 4) -> F (CBM.out_evFlightMode2 = TRUE));
+LTLSPEC G ((CBM.in_evInstruct = 6) -> F (CBM.out_evFlightMode3 = TRUE));
+LTLSPEC G (((FC.state = idle) & (FC.in_evstart = TRUE)) -> F (FC.state = takeoff_climb0));
+SPEC AG (((AP.state = off) & (AP.in_evActuatorEngage = TRUE)) -> AX (AP.state = on));
+SPEC AG (((AP.state = on) & (AP.in_evFlightMode1 = TRUE)) -> AX (AP.out_current = 18));
+LTLSPEC G (((PL.state = off) & (PL.in_evPayloadActivate = TRUE)) -> F (PL.state = on));
+LTLSPEC G ((PL.state = on) -> F (PL.state = over));
+LTLSPEC G ((FC.state = engine_pre_ignition) -> F (FC.state = motor_ignition));
+LTLSPEC G ((FC.state = motor_ignition) -> F (FC.state = cruise_turn));
+LTLSPEC G ((FC.state = cruise_turn) -> F (FC.state = descent));
+LTLSPEC G ((FC.state = descent) -> F (FC.state = level_flight_2));
+LTLSPEC G ((FC.state = descent) -> F (FC.out_evInstruct = 3));
+LTLSPEC G ((RADAR.in_evHighPowerOn = TRUE) -> F (RADAR.state = high_power_on));
+LTLSPEC G ((AP.in_evFlightMode1 = TRUE) -> F (AP.state = transition1));
+LTLSPEC G ((FC.state = level_flight_2) -> F (FC.state = secondary_descent));
+LTLSPEC G ((FC.state = level_flight_2) -> F (FC.out_evInstruct = 4));
+LTLSPEC G ((AP.in_evFlightMode2 = TRUE) -> F (AP.state = transition1));
+LTLSPEC G ((FC.state = secondary_descent) -> F (FC.state = level_flight_3));
+LTLSPEC G ((FC.state = secondary_descent) -> F (FC.out_evInstruct = 5));
+LTLSPEC G ((FC.state = level_flight_3) -> F (FC.state = landing_approach));
+LTLSPEC G ((FC.state = level_flight_3) -> F (FC.out_evInstruct = 6));
+LTLSPEC G ((AP.in_evFlightMode3 = TRUE) -> F (AP.state = transition1));
+LTLSPEC G ((FC.state = landing_approach) -> F (FC.state = finish));
+LTLSPEC G ((AP.state = transition1) -> F (AP.state = on));
+LTLSPEC G ((FC.state = idle) -> ((FC.state = idle) U (FC.in_evstart = TRUE)));
+LTLSPEC G ((BAT.state = idle) -> ((BAT.state = idle) U (BAT.in_evstart = TRUE)));
+LTLSPEC G ((RADAR.state = off) -> ((RADAR.state = off) U (RADAR.in_evSensorPreparation = TRUE)));
+LTLSPEC G ((RADAR.state = pre_heat) -> ((RADAR.state = pre_heat) U (RADAR.in_evHighPowerOn = TRUE)));
+LTLSPEC G ((AP.state = off) -> ((AP.state = off) U (AP.in_evActuatorEngage = TRUE)));
+LTLSPEC G ((PL.state = off) -> ((PL.state = off) U (PL.in_evPayloadActivate = TRUE)));
+LTLSPEC G ((PL.state = on) -> ((PL.state = on) U (PL.state = over)));
+LTLSPEC G (!((FC.state = idle) & (FC.state = finish)));
+LTLSPEC G (!((BAT.state = idle) & (BAT.state = discharge)));
+LTLSPEC G (!((RADAR.state = off) & (RADAR.state = high_power_on)));
+LTLSPEC G (!((AP.state = off) & (AP.out_current = 18)));
+LTLSPEC G (!((PL.state = on) & (PL.state = over)));
+LTLSPEC F (FC.state = finish);
+LTLSPEC F (BAT.state = discharge);
+LTLSPEC F (RADAR.state = high_power_on);
+LTLSPEC F (PL.state = over);
+LTLSPEC F (AP.state = on);
+
+-- 触发可达性检查（不计入正式规约总数）
+CTLSPEC NAME COV_REQ_FMCS_CONS_01 := EF (BAT.state = discharge);
+CTLSPEC NAME COV_REQ_FMCS_CONS_02 := EF (RADAR.state = pre_heat);
+CTLSPEC NAME COV_REQ_FMCS_CONS_03 := EF (RADAR.state = high_power_on);
+CTLSPEC NAME COV_REQ_FMCS_CONS_04 := EF (PL.state = on);
+CTLSPEC NAME COV_REQ_FMCS_CONS_05 := EF (PL.state = over);
+CTLSPEC NAME COV_REQ_FMCS_CONS_06 := EF (CBM.in_evInstruct = 1);
+CTLSPEC NAME COV_REQ_FMCS_CONS_07 := EF (CBM.in_evInstruct = 1);
+CTLSPEC NAME COV_REQ_FMCS_CONS_08 := EF (CBM.in_evInstruct = 2);
+CTLSPEC NAME COV_REQ_FMCS_CONS_09 := EF (CBM.in_evInstruct = 3);
+CTLSPEC NAME COV_REQ_FMCS_CONS_10 := EF (CBM.in_evInstruct = 3);
+CTLSPEC NAME COV_REQ_FMCS_CONS_11 := EF (CBM.in_evInstruct = 4);
+CTLSPEC NAME COV_REQ_FMCS_CONS_12 := EF (CBM.in_evInstruct = 6);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_13 := EF ((FC.state = idle) & (FC.in_evstart = TRUE));
+CTLSPEC NAME COV_REQ_FMCS_FLOW_14 := EF ((AP.state = off) & (AP.in_evActuatorEngage = TRUE));
+CTLSPEC NAME COV_REQ_FMCS_FLOW_15 := EF ((AP.state = on) & (AP.in_evFlightMode1 = TRUE));
+CTLSPEC NAME COV_REQ_FMCS_FLOW_16 := EF ((PL.state = off) & (PL.in_evPayloadActivate = TRUE));
+CTLSPEC NAME COV_REQ_FMCS_FLOW_17 := EF (PL.state = on);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_18 := EF (FC.state = engine_pre_ignition);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_19 := EF (FC.state = motor_ignition);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_20 := EF (FC.state = cruise_turn);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_21 := EF (FC.state = descent);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_22 := EF (FC.state = descent);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_23 := EF (RADAR.in_evHighPowerOn = TRUE);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_24 := EF (AP.in_evFlightMode1 = TRUE);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_25 := EF (FC.state = level_flight_2);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_26 := EF (FC.state = level_flight_2);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_27 := EF (AP.in_evFlightMode2 = TRUE);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_28 := EF (FC.state = secondary_descent);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_29 := EF (FC.state = secondary_descent);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_30 := EF (FC.state = level_flight_3);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_31 := EF (FC.state = level_flight_3);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_32 := EF (AP.in_evFlightMode3 = TRUE);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_33 := EF (FC.state = landing_approach);
+CTLSPEC NAME COV_REQ_FMCS_FLOW_34 := EF (AP.state = transition1);
+CTLSPEC NAME COV_REQ_FMCS_HOLD_35 := EF (FC.state = idle);
+CTLSPEC NAME COV_REQ_FMCS_HOLD_36 := EF (BAT.state = idle);
+CTLSPEC NAME COV_REQ_FMCS_HOLD_37 := EF (RADAR.state = off);
+CTLSPEC NAME COV_REQ_FMCS_HOLD_38 := EF (RADAR.state = pre_heat);
+CTLSPEC NAME COV_REQ_FMCS_HOLD_39 := EF (AP.state = off);
+CTLSPEC NAME COV_REQ_FMCS_HOLD_40 := EF (PL.state = off);
+CTLSPEC NAME COV_REQ_FMCS_HOLD_41 := EF (PL.state = on);
+-- ==================================================================
+-- END: 可直接复制到nuXmv模型的完整规约与覆盖检查
+-- ==================================================================
